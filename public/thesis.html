@@ -1018,6 +1018,176 @@
     event.currentTarget.classList.add('active');
     document.getElementById('panel-' + id).classList.add('active');
   }
+
+  /* ── Clear NVDA content for a new/unknown symbol ── */
+  function clearForNewSymbol(symbol) {
+    const ph = (label) =>
+      `<span style="color:#3a3a3a;font-style:italic">[ ${label} — add your research for ${symbol} ]</span>`;
+
+    // Overview narrative
+    const narr = document.querySelector('.narrative-block p');
+    if (narr) narr.innerHTML = ph('Core thesis / 10x opportunity');
+
+    // 3-card snapshot
+    const snapCards = document.querySelectorAll('#panel-overview .grid3 .card');
+    ['10X Driver', 'Moat', 'Catalyst'].forEach((lbl, i) => {
+      if (!snapCards[i]) return;
+      const h3 = snapCards[i].querySelector('h3');
+      const p  = snapCards[i].querySelector('p');
+      if (h3) h3.textContent = lbl;
+      if (p)  p.innerHTML = ph(lbl + ' details');
+    });
+
+    // Core narrative card (2nd standalone card in overview)
+    const coreCards = document.querySelectorAll('#panel-overview > .card');
+    if (coreCards[1]) coreCards[1].querySelectorAll('p').forEach(p => { p.innerHTML = ph('Core narrative'); });
+
+    // Scenario strip prices
+    [['bull','🐂 Bull'],['base','📊 Base'],['bear','🐻 Bear']].forEach(([cls]) => {
+      const chip = document.querySelector(`.s-chip.${cls}`);
+      if (!chip) return;
+      const sp = chip.querySelector('.s-price');
+      const st = chip.querySelector('.s-pct');
+      if (sp) sp.textContent = 'TBD';
+      if (st) st.textContent = '— · —% prob';
+    });
+
+    // Price bar range labels
+    document.querySelectorAll('#panel-overview [style*="justify-content:space-between"] span').forEach(s => {
+      if (/\$\d/.test(s.textContent)) s.textContent = 'TBD';
+    });
+    // Current / Base Target values in overview
+    document.querySelectorAll('#panel-overview [style*="font-size:18px"]').forEach(el => {
+      el.textContent = '—';
+    });
+
+    // Fundamentals — revenue bar labels + widths
+    const fundPanel = document.getElementById('panel-fundamentals');
+    if (fundPanel) {
+      fundPanel.querySelectorAll('[style*="width:85%"],[style*="width:10%"],[style*="width:5%"]').forEach(bar => {
+        bar.style.width = '0%';
+      });
+      fundPanel.querySelectorAll('.card span').forEach(s => {
+        if (/\$|%/.test(s.textContent) && s.textContent.length < 40) s.textContent = '—';
+      });
+      fundPanel.querySelectorAll('h3').forEach((h, i) => {
+        if (i === 0) h.textContent = 'Revenue Segments';
+        if (i === 1) h.textContent = 'Competitive Position';
+      });
+      fundPanel.querySelectorAll('.card p').forEach(p => {
+        if (p.textContent.trim().length > 50) p.innerHTML = ph('Add details');
+      });
+      fundPanel.querySelectorAll('.grid3 .card p').forEach(p => { p.innerHTML = ph('Add details'); });
+    }
+
+    // 7 Powers
+    document.querySelectorAll('.power-row').forEach(row => {
+      const desc = row.querySelector('.power-desc');
+      const stars = row.querySelector('.power-stars');
+      const grade = row.querySelector('.power-grade');
+      if (desc)  desc.innerHTML = ph(row.querySelector('.power-name').textContent.trim());
+      if (stars) stars.textContent = '☆☆☆☆☆';
+      if (grade) grade.textContent = '—';
+    });
+
+    // SWOT
+    document.querySelectorAll('.swot-item li').forEach(li => { li.innerHTML = ph('Add item'); });
+
+    // TAM + Key Players
+    const mktPanel = document.getElementById('panel-market');
+    if (mktPanel) {
+      mktPanel.querySelectorAll('.card p, .card li').forEach(el => {
+        if (el.textContent.trim().length > 40) el.innerHTML = ph('Add research');
+      });
+      mktPanel.querySelectorAll('.player-name').forEach((el, i) => {
+        el.textContent = `Key Person ${i + 1}`;
+      });
+      mktPanel.querySelectorAll('.player-role').forEach(el => { el.textContent = 'Role / Title'; });
+      mktPanel.querySelectorAll('.player-note').forEach(el => { el.innerHTML = ph('Add player details'); });
+    }
+
+    // Financials table
+    const finPanel = document.getElementById('panel-financials');
+    if (finPanel) {
+      finPanel.querySelectorAll('td:not(:first-child)').forEach(td => {
+        if (/[\$\d]/.test(td.textContent)) td.textContent = '—';
+      });
+      finPanel.querySelectorAll('.val-price').forEach(el => { el.textContent = 'TBD'; });
+      finPanel.querySelectorAll('.val-note').forEach(el => { el.innerHTML = ph('Add valuation logic'); });
+      finPanel.querySelectorAll('.ad-num').forEach(el => { el.textContent = '—'; });
+      const ptRange = finPanel.querySelector('.ad-num[style*="color:var(--fg)"]');
+      if (ptRange) ptRange.textContent = '—';
+    }
+
+    // Scenarios
+    const scenPanel = document.getElementById('panel-scenarios');
+    if (scenPanel) {
+      scenPanel.querySelectorAll('.sc-price').forEach(el => { el.textContent = 'TBD'; });
+      scenPanel.querySelectorAll('.sc-return').forEach(el => { el.textContent = '—'; });
+      scenPanel.querySelectorAll('.sc-prob').forEach(el => { el.textContent = '—% Probability'; });
+      scenPanel.querySelectorAll('.sc-assumptions li').forEach(li => { li.innerHTML = ph('Add assumption'); });
+      // EV calculation
+      const evPrice = scenPanel.querySelector('[style*="font-size:36px"]');
+      if (evPrice) evPrice.textContent = 'TBD';
+      const evRet = scenPanel.querySelector('[style*="color:var(--green)"]');
+      if (evRet) evRet.textContent = '—';
+      scenPanel.querySelectorAll('.card p').forEach(p => {
+        if (p.textContent.trim().length > 40) p.innerHTML = ph('Add calculation');
+      });
+    }
+  }
+
+  /* ── Symbol from URL param ── */
+  (async function initSymbol() {
+    const params = new URLSearchParams(window.location.search);
+    const symbol = (params.get('symbol') || 'NVDA').toUpperCase();
+
+    if (symbol === 'NVDA') return; // default page — no update needed
+
+    // Update page title + header identifiers
+    document.title = `Stock10x — ${symbol} Thesis`;
+    const sticker = document.querySelector('.sticker');
+    const sname = document.querySelector('.sname');
+    const scat  = document.querySelector('.scat');
+    if (sticker) sticker.textContent = symbol;
+    if (sname)   sname.textContent = symbol;
+    if (scat)    scat.textContent = '—';
+
+    // Clear all NVDA content immediately so the user never sees NVDA data for a different stock
+    clearForNewSymbol(symbol);
+
+    // Show banner
+    const header = document.querySelector('.stock-header');
+    if (header) {
+      const banner = document.createElement('div');
+      banner.id = 'thesis-banner';
+      banner.style.cssText = 'background:rgba(82,0,255,0.12);border:1px solid #5200ff;border-radius:8px;padding:10px 16px;margin:12px 40px 0;font-size:12px;color:#949494;font-family:var(--font-m);letter-spacing:0.5px';
+      banner.innerHTML = `<span style="color:#5200ff;font-weight:600">${symbol}</span> — New thesis. Fill in each section with your research for ${symbol}.`;
+      header.insertAdjacentElement('afterend', banner);
+    }
+
+    // Fetch from API — fills in KPIs if symbol is in the database
+    try {
+      const resp = await fetch(`https://stock10x.vercel.app/api/stock/${symbol}`);
+      if (!resp.ok) return; // unknown symbol — clearForNewSymbol already blanked content
+      const d = await resp.json();
+
+      if (sticker) sticker.textContent = d.symbol;
+      if (sname)   sname.textContent = d.name || d.symbol;
+
+      const kpis = document.querySelectorAll('.kpi');
+      if (kpis[0]) kpis[0].querySelector('.kpi-v').textContent = d.currentPrice ? '$' + d.currentPrice.toLocaleString() : '—';
+      if (kpis[1]) kpis[1].querySelector('.kpi-v').textContent = d.priceTarget2030 ? '$' + d.priceTarget2030.toLocaleString() : '—';
+      if (kpis[2]) kpis[2].querySelector('.kpi-v').textContent = d.upsidePercent || '—';
+      const analystKpi = kpis[4] ? kpis[4].querySelector('.kpi-v') : null;
+      if (analystKpi && d.action) analystKpi.textContent = d.action;
+
+      const banner = document.getElementById('thesis-banner');
+      if (banner) {
+        banner.innerHTML = `<span style="color:#3cffd0;font-weight:600">${d.symbol}</span> — ${d.name}. Price: <strong>$${d.currentPrice}</strong> · Target 2030: <strong style="color:#3cffd0">$${d.priceTarget2030}</strong> · ${d.action}. Fill in the research sections below.`;
+      }
+    } catch(e) {}
+  })();
 </script>
 </body>
 </html>
