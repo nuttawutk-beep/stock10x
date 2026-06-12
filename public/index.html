@@ -1,0 +1,126 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Stock10x — Platform Overview</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Anton&family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #131313; --surface: #1c1c1c; --s2: #252525;
+      --fg: #fff; --muted: #949494; --border: #2a2a2a;
+      --accent: #3cffd0; --uv: #5200ff; --hover: #3860be;
+      --font-d: 'Anton', Impact, Helvetica, sans-serif;
+      --font-b: 'Inter', -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
+      --font-m: 'JetBrains Mono', ui-monospace, Menlo, monospace;
+    }
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      background: var(--bg); color: var(--fg);
+      font-family: var(--font-b); -webkit-font-smoothing: antialiased;
+      min-height: 100vh; display: flex; flex-direction: column;
+    }
+    nav {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 0 40px; height: 60px;
+      border-bottom: 1px solid var(--border);
+    }
+    .nav-logo { font-family: var(--font-d); font-size: 20px; letter-spacing: 0.05em; color: var(--fg); text-decoration: none; }
+    .nav-logo span { color: var(--accent); }
+    main { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 60px 40px; }
+    .platform-badge {
+      font-family: var(--font-m); font-size: 9px; font-weight: 600;
+      letter-spacing: 1.8px; text-transform: uppercase; color: var(--accent);
+      margin-bottom: 16px; display: flex; align-items: center; gap: 8px;
+    }
+    .platform-badge::before, .platform-badge::after {
+      content: ''; display: block; width: 20px; height: 1px; background: var(--accent);
+    }
+    h1 {
+      font-family: var(--font-d); font-size: clamp(48px, 8vw, 100px);
+      letter-spacing: 0.04em; line-height: 1; text-align: center; margin-bottom: 12px;
+    }
+    h1 span { color: var(--accent); }
+    .subtitle {
+      font-size: 15px; font-weight: 300; color: var(--muted);
+      text-align: center; max-width: 480px; line-height: 1.7; margin-bottom: 48px;
+    }
+    .screens {
+      display: grid; grid-template-columns: repeat(3, 1fr);
+      gap: 16px; width: 100%; max-width: 900px;
+    }
+    .screen-card {
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: 16px; padding: 24px;
+      text-decoration: none; color: inherit;
+      transition: border-color 200ms, background 200ms;
+      display: flex; flex-direction: column; gap: 12px;
+    }
+    .screen-card:hover { border-color: var(--accent); background: rgba(60,255,208,0.03); }
+    .screen-card:hover .sc-num { color: var(--accent); }
+    .sc-num {
+      font-family: var(--font-d); font-size: 40px; color: var(--s2);
+      line-height: 1; transition: color 200ms;
+    }
+    .sc-tag {
+      font-family: var(--font-m); font-size: 8.5px; font-weight: 600;
+      letter-spacing: 1.5px; text-transform: uppercase;
+      color: var(--muted); margin-bottom: 2px;
+    }
+    .sc-title { font-size: 15px; font-weight: 600; color: var(--fg); }
+    .sc-desc { font-size: 12px; color: var(--muted); line-height: 1.6; }
+    .sc-arrow {
+      margin-top: auto; font-family: var(--font-m); font-size: 9px; font-weight: 600;
+      letter-spacing: 1.3px; text-transform: uppercase; color: var(--muted);
+    }
+    .screen-card:hover .sc-arrow { color: var(--accent); }
+    @media (max-width: 600px) {
+      .screens { grid-template-columns: 1fr; max-width: 400px; }
+      nav { padding: 0 16px; }
+      main { padding: 40px 16px; }
+    }
+  </style>
+</head>
+<body>
+<nav>
+  <a href="index.html" class="nav-logo">STOCK<span>10X</span></a>
+</nav>
+<main>
+  <div class="platform-badge">Conviction Investing Platform</div>
+  <h1>STOCK<span>10X</span></h1>
+  <p class="subtitle">Find, research, and build conviction on your next 10x opportunity. Three surfaces, one system.</p>
+
+  <div class="screens">
+    <a href="landing.html" class="screen-card">
+      <div class="sc-num">01</div>
+      <div>
+        <div class="sc-tag">Page 01 · Marketing</div>
+        <div class="sc-title">Platform Hero</div>
+      </div>
+      <div class="sc-desc">What Stock10x is and why it exists. Hero visual, platform narrative, and key metrics.</div>
+      <div class="sc-arrow">landing.html →</div>
+    </a>
+    <a href="dashboard.html" class="screen-card">
+      <div class="sc-num">02</div>
+      <div>
+        <div class="sc-tag">Page 02 · Dashboard</div>
+        <div class="sc-title">Watchlist Overview</div>
+      </div>
+      <div class="sc-desc">All tracked stocks in one row each. Sparkline chart, upside %, time horizon, and bull probability at a glance.</div>
+      <div class="sc-arrow">dashboard.html →</div>
+    </a>
+    <a href="thesis.html" class="screen-card">
+      <div class="sc-num">03</div>
+      <div>
+        <div class="sc-tag">Page 03 · Thesis Builder</div>
+        <div class="sc-title">Deep Thesis — NVDA</div>
+      </div>
+      <div class="sc-desc">Full research stack: 7 Powers, SWOT, TAM, key players, financials, valuation, and Bull/Base/Bear scenarios.</div>
+      <div class="sc-arrow">thesis.html →</div>
+    </a>
+  </div>
+</main>
+</body>
+</html>

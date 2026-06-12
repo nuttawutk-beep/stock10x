@@ -1,0 +1,314 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Stock10x — Find Your 10x Opportunity</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Anton&family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #131313;
+      --surface: #1c1c1c;
+      --surface-2: #2d2d2d;
+      --fg: #ffffff;
+      --muted: #949494;
+      --border: #2a2a2a;
+      --accent: #3cffd0;
+      --uv: #5200ff;
+      --hover: #3860be;
+      --font-d: 'Anton', Impact, Helvetica, sans-serif;
+      --font-b: 'Inter', -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
+      --font-m: 'JetBrains Mono', ui-monospace, Menlo, monospace;
+    }
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html { scroll-behavior: smooth; }
+    body {
+      background: var(--bg);
+      color: var(--fg);
+      font-family: var(--font-b);
+      -webkit-font-smoothing: antialiased;
+      overflow-x: hidden;
+    }
+
+    /* ── NAV ── */
+    nav {
+      position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 0 48px; height: 60px;
+      background: rgba(19,19,19,0.92);
+      backdrop-filter: blur(14px);
+      border-bottom: 1px solid var(--border);
+    }
+    .nav-logo {
+      font-family: var(--font-d); font-size: 20px; letter-spacing: 0.05em;
+      color: var(--fg); text-decoration: none;
+    }
+    .nav-logo .x { color: var(--accent); }
+    .nav-links { display: flex; gap: 28px; list-style: none; }
+    .nav-links a {
+      font-family: var(--font-m); font-size: 10px; font-weight: 600;
+      letter-spacing: 1.5px; text-transform: uppercase;
+      color: var(--muted); text-decoration: none; transition: color 150ms;
+    }
+    .nav-links a:hover { color: var(--hover); }
+    .btn-nav {
+      background: var(--accent); color: #000;
+      font-family: var(--font-m); font-size: 10px; font-weight: 600;
+      letter-spacing: 1.5px; text-transform: uppercase;
+      text-decoration: none; padding: 8px 18px; border-radius: 24px;
+      transition: all 180ms;
+    }
+    .btn-nav:hover { background: rgba(255,255,255,0.15); color: #fff; }
+
+    /* ── HERO ── */
+    .hero {
+      position: relative; min-height: 100vh;
+      display: flex; align-items: center; overflow: hidden;
+    }
+    .hero-bg {
+      position: absolute; inset: 0; z-index: 0;
+      background: #0a0a0a;
+    }
+    .hero-bg svg { width: 100%; height: 100%; }
+    .hero-fade {
+      position: absolute; inset: 0; z-index: 1;
+      background: linear-gradient(90deg,
+        rgba(10,10,10,0.97) 0%,
+        rgba(10,10,10,0.88) 42%,
+        rgba(10,10,10,0.25) 68%,
+        rgba(10,10,10,0.05) 100%);
+    }
+    .hero-fade-bottom {
+      position: absolute; bottom: 0; left: 0; right: 0; z-index: 2;
+      height: 140px;
+      background: linear-gradient(to top, rgba(19,19,19,1) 0%, transparent 100%);
+    }
+
+    .hero-content {
+      position: relative; z-index: 3;
+      padding: 130px 80px 180px;
+      max-width: 840px;
+    }
+    .eyebrow {
+      display: flex; align-items: center; gap: 10px;
+      font-family: var(--font-m); font-size: 10px; font-weight: 600;
+      letter-spacing: 1.8px; text-transform: uppercase;
+      color: var(--accent); margin-bottom: 20px;
+    }
+    .eyebrow::before {
+      content: ''; display: block; width: 28px; height: 1px; background: var(--accent);
+    }
+    h1 {
+      font-family: var(--font-d);
+      font-size: clamp(72px, 11vw, 168px);
+      line-height: 0.9; letter-spacing: 0.03em;
+      color: var(--fg);
+    }
+    h1 .a { color: var(--accent); }
+    .tagline-en {
+      margin-top: 32px;
+      font-size: clamp(17px, 2.1vw, 24px); font-weight: 300;
+      line-height: 1.5; color: var(--fg); letter-spacing: 0.1px;
+    }
+    .tagline-th {
+      margin-top: 6px;
+      font-size: clamp(14px, 1.7vw, 18px); font-weight: 300;
+      line-height: 1.6; color: var(--muted);
+    }
+    .actions {
+      display: flex; gap: 12px; margin-top: 44px; flex-wrap: wrap;
+    }
+    .btn-p {
+      background: var(--accent); color: #000;
+      font-family: var(--font-m); font-size: 11px; font-weight: 600;
+      letter-spacing: 1.4px; text-transform: uppercase;
+      text-decoration: none; padding: 14px 28px; border-radius: 40px;
+      transition: all 180ms; white-space: nowrap;
+    }
+    .btn-p:hover { background: rgba(255,255,255,0.15); color: #fff; }
+    .btn-g {
+      background: transparent; color: var(--fg);
+      font-family: var(--font-m); font-size: 11px; font-weight: 600;
+      letter-spacing: 1.4px; text-transform: uppercase;
+      text-decoration: none; padding: 14px 28px; border-radius: 40px;
+      border: 1px solid #3a3a3a; transition: all 180ms; white-space: nowrap;
+    }
+    .btn-g:hover { border-color: var(--accent); color: var(--accent); }
+
+    /* ── METRICS STRIP ── */
+    .metrics {
+      position: absolute; bottom: 0; left: 0; right: 0; z-index: 3;
+      display: flex; padding: 20px 80px; gap: 48px;
+      border-top: 1px solid var(--border);
+      background: rgba(19,19,19,0.75);
+      backdrop-filter: blur(10px);
+    }
+    .met { display: flex; flex-direction: column; gap: 2px; }
+    .met-v {
+      font-family: var(--font-d); font-size: 30px;
+      color: var(--accent); line-height: 1;
+    }
+    .met-en {
+      font-family: var(--font-m); font-size: 9px; font-weight: 500;
+      letter-spacing: 1.5px; text-transform: uppercase;
+      color: var(--muted); margin-top: 3px;
+    }
+    .met-th { font-size: 11px; color: var(--muted); opacity: 0.6; margin-top: 1px; }
+
+    @media (max-width: 900px) {
+      nav { padding: 0 20px; }
+      .nav-links { display: none; }
+      .hero-content { padding: 96px 24px 180px; }
+      .metrics { padding: 18px 24px; gap: 24px; flex-wrap: wrap; }
+    }
+    @media (max-width: 430px) {
+      .metrics .met:nth-child(n+4) { display: none; }
+      .met-v { font-size: 24px; }
+    }
+  </style>
+</head>
+<body>
+
+<nav>
+  <a href="index.html" class="nav-logo">STOCK<span class="x">10X</span></a>
+  <ul class="nav-links">
+    <li><a href="dashboard.html">Dashboard</a></li>
+    <li><a href="thesis.html">Thesis Builder</a></li>
+    <li><a href="dashboard.html">Watchlist</a></li>
+  </ul>
+  <a href="dashboard.html" class="btn-nav">Start Free</a>
+</nav>
+
+<section class="hero">
+  <div class="hero-bg">
+    <svg viewBox="0 0 1440 900" preserveAspectRatio="xMidYMid slice" xmlns="http://www.w3.org/2000/svg">
+      <defs>
+        <filter id="glow" x="-25%" y="-25%" width="150%" height="150%">
+          <feGaussianBlur stdDeviation="5" result="blur"/>
+          <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+        </filter>
+        <filter id="glow2" x="-50%" y="-50%" width="200%" height="200%">
+          <feGaussianBlur stdDeviation="14" result="blur"/>
+          <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+        </filter>
+        <linearGradient id="lg1" x1="580" y1="0" x2="1420" y2="0" gradientUnits="userSpaceOnUse">
+          <stop offset="0%" stop-color="#3cffd0" stop-opacity="0"/>
+          <stop offset="25%" stop-color="#3cffd0" stop-opacity="0.7"/>
+          <stop offset="100%" stop-color="#3cffd0" stop-opacity="1"/>
+        </linearGradient>
+        <linearGradient id="lg2" x1="0" y1="0" x2="0" y2="1" gradientUnits="objectBoundingBox">
+          <stop offset="0%" stop-color="#3cffd0" stop-opacity="0.12"/>
+          <stop offset="100%" stop-color="#3cffd0" stop-opacity="0"/>
+        </linearGradient>
+        <linearGradient id="lg3" x1="650" y1="0" x2="1420" y2="0" gradientUnits="userSpaceOnUse">
+          <stop offset="0%" stop-color="#5200ff" stop-opacity="0"/>
+          <stop offset="100%" stop-color="#5200ff" stop-opacity="0.65"/>
+        </linearGradient>
+      </defs>
+
+      <rect width="1440" height="900" fill="#080808"/>
+
+      <!-- horizontal grid -->
+      <g stroke="#fff" stroke-width="1" opacity="0.035">
+        <line x1="0" y1="180" x2="1440" y2="180"/>
+        <line x1="0" y1="360" x2="1440" y2="360"/>
+        <line x1="0" y1="540" x2="1440" y2="540"/>
+        <line x1="0" y1="720" x2="1440" y2="720"/>
+      </g>
+      <!-- vertical grid -->
+      <g stroke="#fff" stroke-width="1" opacity="0.02">
+        <line x1="360" y1="0" x2="360" y2="900"/>
+        <line x1="600" y1="0" x2="600" y2="900"/>
+        <line x1="840" y1="0" x2="840" y2="900"/>
+        <line x1="1080" y1="0" x2="1080" y2="900"/>
+        <line x1="1320" y1="0" x2="1320" y2="900"/>
+      </g>
+
+      <!-- Main rising trend — mint -->
+      <path d="M580,820 C620,800 655,760 700,730 C745,700 770,710 820,670 C870,630 890,590 940,550 C990,510 1010,525 1060,475 C1110,425 1130,395 1185,340 C1240,285 1258,255 1310,205 C1352,165 1375,135 1420,95"
+            fill="none" stroke="url(#lg1)" stroke-width="2.5" filter="url(#glow)"/>
+
+      <!-- Fill under main trend -->
+      <path d="M580,820 C620,800 655,760 700,730 C745,700 770,710 820,670 C870,630 890,590 940,550 C990,510 1010,525 1060,475 C1110,425 1130,395 1185,340 C1240,285 1258,255 1310,205 C1352,165 1375,135 1420,95 L1440,90 L1440,900 L580,900 Z"
+            fill="url(#lg2)" opacity="0.8"/>
+
+      <!-- Secondary trend — UV -->
+      <path d="M650,865 C700,845 740,820 790,800 C840,780 870,768 920,740 C970,712 1000,695 1050,658 C1100,621 1130,600 1180,562 C1230,524 1260,505 1310,468 C1355,434 1380,415 1420,382"
+            fill="none" stroke="url(#lg3)" stroke-width="1.8" opacity="0.5"/>
+
+      <!-- Muted third line -->
+      <path d="M700,870 L800,848 L900,820 L1000,790 L1100,755 L1200,718 L1300,680 L1400,642"
+            fill="none" stroke="#ffffff" stroke-width="1.5" opacity="0.08"/>
+
+      <!-- Glow endpoint -->
+      <circle cx="1420" cy="95" r="16" fill="#3cffd0" opacity="0.15" filter="url(#glow2)"/>
+      <circle cx="1420" cy="95" r="5" fill="#3cffd0" filter="url(#glow)"/>
+
+      <!-- Float card: NVDA -->
+      <g transform="translate(1000,110)">
+        <rect width="210" height="82" rx="14" fill="#161616" stroke="#3cffd0" stroke-width="0.8" opacity="0.94"/>
+        <text x="14" y="22" font-family="monospace" font-size="9" fill="#3cffd0" letter-spacing="2">NVDA · NVIDIA CORP</text>
+        <text x="14" y="48" font-family="Impact,Helvetica,sans-serif" font-size="26" fill="#fff">$875.40</text>
+        <text x="14" y="67" font-family="monospace" font-size="10" fill="#3cffd0">TARGET $1,450 · +65.7%</text>
+      </g>
+
+      <!-- Float card: TSLA -->
+      <g transform="translate(830,290)">
+        <rect width="190" height="74" rx="12" fill="#161616" stroke="#5200ff" stroke-width="0.8" opacity="0.9"/>
+        <text x="12" y="20" font-family="monospace" font-size="9" fill="#9966ff" letter-spacing="2">TSLA · TESLA INC</text>
+        <text x="12" y="44" font-family="Impact,Helvetica,sans-serif" font-size="24" fill="#fff">$183.25</text>
+        <text x="12" y="62" font-family="monospace" font-size="9" fill="#949494">+107% UPSIDE · 24M</text>
+      </g>
+
+      <!-- Prob pill: NVDA -->
+      <g transform="translate(1240,220)">
+        <rect width="152" height="34" rx="17" fill="rgba(60,255,208,0.1)" stroke="#3cffd0" stroke-width="0.8"/>
+        <text x="76" y="22" font-family="monospace" font-size="9.5" fill="#3cffd0" text-anchor="middle" letter-spacing="1.2">78% BULL PROB</text>
+      </g>
+
+      <!-- Prob pill: META -->
+      <g transform="translate(1070,340)">
+        <rect width="148" height="34" rx="17" fill="rgba(82,0,255,0.1)" stroke="#5200ff" stroke-width="0.8"/>
+        <text x="74" y="22" font-family="monospace" font-size="9.5" fill="#9966ff" text-anchor="middle" letter-spacing="1.2">74% BULL PROB</text>
+      </g>
+
+    </svg>
+  </div>
+
+  <div class="hero-fade"></div>
+  <div class="hero-fade-bottom"></div>
+
+  <div class="hero-content">
+    <p class="eyebrow">Conviction Investing Platform</p>
+    <h1>STOCK<span class="a">10X</span></h1>
+    <p class="tagline-en">Find your next 10x opportunity.<br>Build conviction with data-driven thesis research.</p>
+    <div class="actions">
+      <a href="dashboard.html" class="btn-p">View Dashboard →</a>
+      <a href="thesis.html" class="btn-g">Build Thesis</a>
+    </div>
+  </div>
+
+  <div class="metrics">
+    <div class="met">
+      <span class="met-v">247</span>
+      <span class="met-en">Stocks Analyzed</span>
+    </div>
+    <div class="met">
+      <span class="met-v">18</span>
+      <span class="met-en">10x Candidates</span>
+    </div>
+    <div class="met">
+      <span class="met-v">74%</span>
+      <span class="met-en">Avg Bull Probability</span>
+    </div>
+    <div class="met">
+      <span class="met-v">$4.2T</span>
+      <span class="met-en">Total TAM Covered</span>
+    </div>
+  </div>
+</section>
+
+</body>
+</html>
