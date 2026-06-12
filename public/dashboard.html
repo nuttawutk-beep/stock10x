@@ -139,7 +139,7 @@
     /* STOCK ROW */
     .stock-row {
       display: grid;
-      grid-template-columns: 36px 145px 105px 118px 120px 58px 68px 64px 55px 90px 86px 88px;
+      grid-template-columns: 36px 145px 105px 118px 120px 58px 68px 64px 55px 90px 86px 88px 32px;
       gap: 0 10px;
       padding: 14px 16px;
       border-bottom: 1px solid var(--border);
@@ -239,6 +239,70 @@
     }
     .view-btn:hover { border-color: var(--accent); color: var(--accent); }
 
+    /* DELETE BUTTON */
+    .del-btn {
+      width: 26px; height: 26px; border-radius: 50%;
+      background: transparent; border: 1px solid transparent;
+      color: var(--muted); font-size: 14px; line-height: 1;
+      cursor: pointer; display: flex; align-items: center; justify-content: center;
+      transition: all 150ms; padding: 0; flex-shrink: 0;
+    }
+    .del-btn:hover { background: rgba(239,68,68,0.12); border-color: var(--red); color: var(--red); }
+
+    /* MODAL */
+    .modal-backdrop {
+      display: none; position: fixed; inset: 0; z-index: 500;
+      background: rgba(0,0,0,0.72); backdrop-filter: blur(6px);
+      align-items: center; justify-content: center;
+    }
+    .modal-backdrop.open { display: flex; }
+    .modal {
+      background: #1c1c1c; border: 1px solid #333; border-radius: 16px;
+      padding: 28px 32px; width: 420px; max-width: 94vw;
+      position: relative;
+    }
+    .modal h3 {
+      font-family: var(--font-d); font-size: 20px; letter-spacing: 0.04em;
+      margin-bottom: 20px; color: var(--fg);
+    }
+    .modal h3 span { color: var(--accent); }
+    .modal-close {
+      position: absolute; top: 16px; right: 18px;
+      background: none; border: none; color: var(--muted);
+      font-size: 20px; cursor: pointer; line-height: 1; padding: 4px;
+    }
+    .modal-close:hover { color: var(--fg); }
+    .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 20px; }
+    .form-field { display: flex; flex-direction: column; gap: 5px; }
+    .form-field.full { grid-column: 1 / -1; }
+    .form-field label {
+      font-family: var(--font-m); font-size: 9px; font-weight: 600;
+      letter-spacing: 1.4px; text-transform: uppercase; color: var(--muted);
+    }
+    .form-field input, .form-field select {
+      background: #252525; border: 1px solid #333; border-radius: 8px;
+      color: var(--fg); font-family: var(--font-b); font-size: 13px;
+      padding: 8px 10px; outline: none; transition: border-color 150ms;
+      appearance: none; -webkit-appearance: none;
+    }
+    .form-field input:focus, .form-field select:focus { border-color: var(--accent); }
+    .form-field input::placeholder { color: var(--muted); }
+    .modal-actions { display: flex; gap: 10px; justify-content: flex-end; }
+    .btn-cancel {
+      background: #252525; border: 1px solid #333; border-radius: 8px;
+      color: var(--muted); font-family: var(--font-m); font-size: 10px;
+      font-weight: 600; letter-spacing: 1.3px; text-transform: uppercase;
+      padding: 8px 18px; cursor: pointer; transition: all 150ms;
+    }
+    .btn-cancel:hover { color: var(--fg); border-color: #555; }
+    .btn-add-submit {
+      background: var(--accent); border: none; border-radius: 8px;
+      color: #000; font-family: var(--font-m); font-size: 10px;
+      font-weight: 600; letter-spacing: 1.3px; text-transform: uppercase;
+      padding: 8px 20px; cursor: pointer; transition: all 150ms;
+    }
+    .btn-add-submit:hover { opacity: 0.85; }
+
     /* ADD STOCK */
     .add-row {
       display: flex; align-items: center; justify-content: center;
@@ -263,7 +327,7 @@
     /* Responsive */
     @media (max-width: 1300px) {
       .tbl-head, .stock-row {
-        grid-template-columns: 36px 135px 95px 110px 110px 52px 62px 58px 50px 84px 80px 82px;
+        grid-template-columns: 36px 135px 95px 110px 110px 52px 62px 58px 50px 84px 80px 82px 28px;
         gap: 0 8px;
       }
     }
@@ -358,6 +422,7 @@
     <span>Analyst</span>
     <span>Probability</span>
     <span></span>
+    <span></span>
   </div>
 
   <!-- NVDA -->
@@ -394,6 +459,7 @@
       <span class="prob-lbl">Bull</span>
     </div>
     <a href="thesis.html" class="view-btn">View Thesis →</a>
+    <button class="del-btn" onclick="deleteRow(this)" title="Remove from watchlist">×</button>
   </div>
 
   <!-- TSLA -->
@@ -430,6 +496,7 @@
       <span class="prob-lbl">Bull</span>
     </div>
     <a href="thesis.html" class="view-btn">View Thesis →</a>
+    <button class="del-btn" onclick="deleteRow(this)" title="Remove from watchlist">×</button>
   </div>
 
   <!-- META -->
@@ -466,6 +533,7 @@
       <span class="prob-lbl">Bull</span>
     </div>
     <a href="thesis.html" class="view-btn">View Thesis →</a>
+    <button class="del-btn" onclick="deleteRow(this)" title="Remove from watchlist">×</button>
   </div>
 
   <!-- AMZN -->
@@ -502,6 +570,7 @@
       <span class="prob-lbl">Bull</span>
     </div>
     <a href="thesis.html" class="view-btn">View Thesis →</a>
+    <button class="del-btn" onclick="deleteRow(this)" title="Remove from watchlist">×</button>
   </div>
 
   <!-- MSFT -->
@@ -538,6 +607,7 @@
       <span class="prob-lbl">Bull</span>
     </div>
     <a href="thesis.html" class="view-btn">View Thesis →</a>
+    <button class="del-btn" onclick="deleteRow(this)" title="Remove from watchlist">×</button>
   </div>
 
   <!-- AAPL -->
@@ -574,26 +644,195 @@
       <span class="prob-lbl">Bull</span>
     </div>
     <a href="thesis.html" class="view-btn">View Thesis →</a>
+    <button class="del-btn" onclick="deleteRow(this)" title="Remove from watchlist">×</button>
   </div>
 
   <!-- ADD ROW -->
-  <a href="thesis.html" class="add-row">
+  <button class="add-row" onclick="openModal()">
     <div class="add-icon">+</div>
     <span class="add-lbl">Add Stock — Build your thesis</span>
-  </a>
+  </button>
 </main>
 
+<!-- ADD STOCK MODAL -->
+<div class="modal-backdrop" id="addModal" onclick="handleBackdropClick(event)">
+  <div class="modal">
+    <button class="modal-close" onclick="closeModal()">×</button>
+    <h3>Add to <span>Watchlist</span></h3>
+    <div class="form-grid">
+      <div class="form-field">
+        <label>Symbol</label>
+        <input id="f-symbol" type="text" placeholder="e.g. GOOGL" maxlength="6" style="text-transform:uppercase"/>
+      </div>
+      <div class="form-field">
+        <label>Company Name</label>
+        <input id="f-name" type="text" placeholder="e.g. Alphabet Inc."/>
+      </div>
+      <div class="form-field">
+        <label>Sector</label>
+        <select id="f-sector">
+          <option value="ai">AI / Semis</option>
+          <option value="cloud">Cloud</option>
+          <option value="ev">EV / Mobility</option>
+          <option value="social">Social</option>
+          <option value="consumer">Consumer Tech</option>
+          <option value="fintech">Fintech</option>
+          <option value="other">Other</option>
+        </select>
+      </div>
+      <div class="form-field">
+        <label>Current Price ($)</label>
+        <input id="f-price" type="number" placeholder="e.g. 175.00" step="0.01"/>
+      </div>
+      <div class="form-field">
+        <label>Upside % Target</label>
+        <input id="f-upside" type="text" placeholder="e.g. +85%"/>
+      </div>
+      <div class="form-field">
+        <label>Analyst Rating</label>
+        <select id="f-analyst">
+          <option value="strong-buy">Strong Buy</option>
+          <option value="buy">Buy</option>
+          <option value="hold">Hold</option>
+          <option value="sell">Sell</option>
+        </select>
+      </div>
+    </div>
+    <div class="modal-actions">
+      <button class="btn-cancel" onclick="closeModal()">Cancel</button>
+      <button class="btn-add-submit" onclick="addStock()">Add to Watchlist</button>
+    </div>
+  </div>
+</div>
+
 <script>
+  /* ── Filter ── */
   function setFilter(el, val) {
     document.querySelectorAll('.fpill').forEach(p => p.classList.remove('on'));
     el.classList.add('on');
     document.querySelectorAll('.stock-row').forEach(row => {
-      if (val === 'all' || row.dataset.sector === val) {
-        row.style.display = '';
-      } else {
-        row.style.display = 'none';
-      }
+      row.style.display = (val === 'all' || row.dataset.sector === val) ? '' : 'none';
     });
+  }
+
+  /* ── Delete ── */
+  function deleteRow(btn) {
+    const row = btn.closest('.stock-row');
+    row.style.transition = 'opacity 200ms, max-height 300ms';
+    row.style.opacity = '0';
+    row.style.overflow = 'hidden';
+    row.style.maxHeight = row.offsetHeight + 'px';
+    requestAnimationFrame(() => {
+      row.style.maxHeight = '0';
+      row.style.padding = '0';
+    });
+    setTimeout(() => {
+      row.remove();
+      renumberRows();
+    }, 320);
+  }
+
+  function renumberRows() {
+    document.querySelectorAll('.stock-row .rank').forEach((el, i) => {
+      el.textContent = i + 1;
+    });
+  }
+
+  /* ── Modal ── */
+  function openModal() {
+    document.getElementById('addModal').classList.add('open');
+    document.getElementById('f-symbol').focus();
+  }
+
+  function closeModal() {
+    document.getElementById('addModal').classList.remove('open');
+    ['f-symbol','f-name','f-price','f-upside'].forEach(id => {
+      document.getElementById(id).value = '';
+    });
+  }
+
+  function handleBackdropClick(e) {
+    if (e.target === document.getElementById('addModal')) closeModal();
+  }
+
+  document.addEventListener('keydown', e => {
+    if (e.key === 'Escape') closeModal();
+  });
+
+  /* ── Add Stock ── */
+  const ANALYST_LABELS = {
+    'strong-buy': 'Strong Buy',
+    'buy': 'Buy',
+    'hold': 'Hold',
+    'sell': 'Sell'
+  };
+  const SECTOR_LABELS = {
+    'ai': 'AI · Semis', 'cloud': 'Cloud', 'ev': 'EV · Mobility',
+    'social': 'Social', 'consumer': 'Consumer Tech',
+    'fintech': 'Fintech', 'other': 'Other'
+  };
+
+  function addStock() {
+    const symbol  = document.getElementById('f-symbol').value.trim().toUpperCase();
+    const name    = document.getElementById('f-name').value.trim();
+    const sector  = document.getElementById('f-sector').value;
+    const price   = document.getElementById('f-price').value.trim();
+    const upside  = document.getElementById('f-upside').value.trim() || '—';
+    const analyst = document.getElementById('f-analyst').value;
+
+    if (!symbol || !name) {
+      document.getElementById('f-symbol').focus();
+      return;
+    }
+
+    const rows = document.querySelectorAll('.stock-row');
+    const rank = rows.length + 1;
+    const upsideClass = upside.startsWith('+') ? (parseInt(upside) >= 80 ? 'high' : 'mid') : 'low';
+    const analystClass = analyst;
+    const analystLabel = ANALYST_LABELS[analyst];
+    const sectorLabel = SECTOR_LABELS[sector] || sector;
+
+    const row = document.createElement('div');
+    row.className = 'stock-row';
+    row.dataset.sector = sector;
+    row.style.opacity = '0';
+    row.innerHTML = `
+      <span class="rank">${rank}</span>
+      <div class="ticker-block">
+        <span class="ticker">${symbol}</span>
+        <span class="co-name">${name}</span>
+      </div>
+      <span class="sector-pill">${sectorLabel}</span>
+      <div class="spark">
+        <svg viewBox="0 0 140 40" width="140" height="40">
+          <path d="M0,20 L35,18 L70,20 L105,18 L140,20" fill="none" stroke="#949494" stroke-width="1.5" stroke-dasharray="4 3" stroke-linecap="round"/>
+          <text x="2" y="9" font-size="6" fill="#949494" font-family="monospace">1M</text>
+        </svg>
+      </div>
+      <div class="price-col">${price ? '$' + parseFloat(price).toFixed(2) : '—'}<small>MCap —</small><small>Shares —</small></div>
+      <span class="ytd-col pos">—</span>
+      <span class="opp5y-col">—</span>
+      <span class="upside ${upsideClass}">${upside}</span>
+      <span class="horizon">—</span>
+      <span class="analyst-pill ${analystClass}">${analystLabel}</span>
+      <div class="prob-wrap">
+        <span class="prob-num" style="color:#949494">—</span>
+        <div class="prob-bar"><div class="prob-fill" style="width:0%;background:#949494"></div></div>
+        <span class="prob-lbl">Bull</span>
+      </div>
+      <a href="thesis.html" class="view-btn">View Thesis →</a>
+      <button class="del-btn" onclick="deleteRow(this)" title="Remove from watchlist">×</button>
+    `;
+
+    const addBtn = document.querySelector('.add-row');
+    addBtn.parentNode.insertBefore(row, addBtn);
+
+    requestAnimationFrame(() => {
+      row.style.transition = 'opacity 250ms';
+      row.style.opacity = '1';
+    });
+
+    closeModal();
   }
 </script>
 </body>
