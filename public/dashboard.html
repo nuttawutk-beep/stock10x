@@ -363,7 +363,7 @@
     <li><a href="dashboard.html" class="active">Dashboard</a></li>
     <li><a href="thesis.html">Thesis Builder</a></li>
   </ul>
-  <a href="thesis.html" class="btn-nav">+ Add Stock</a>
+  <button class="btn-nav" onclick="openModal()">+ Add Stock</button>
 </nav>
 
 <main>
@@ -426,7 +426,7 @@
   </div>
 
   <!-- NVDA -->
-  <div class="stock-row" data-sector="ai">
+  <div class="stock-row" data-sector="ai" data-symbol="NVDA">
     <span class="rank">1</span>
     <div class="ticker-block">
       <span class="ticker">NVDA</span>
@@ -458,12 +458,12 @@
       <div class="prob-bar"><div class="prob-fill" style="width:78%;background:#3cffd0"></div></div>
       <span class="prob-lbl">Bull</span>
     </div>
-    <a href="thesis.html" class="view-btn">View Thesis →</a>
+    <a href="thesis.html?symbol=NVDA" class="view-btn">View Thesis →</a>
     <button class="del-btn" onclick="deleteRow(this)" title="Remove from watchlist">×</button>
   </div>
 
   <!-- TSLA -->
-  <div class="stock-row" data-sector="ev">
+  <div class="stock-row" data-sector="ev" data-symbol="TSLA">
     <span class="rank">2</span>
     <div class="ticker-block">
       <span class="ticker">TSLA</span>
@@ -495,12 +495,12 @@
       <div class="prob-bar"><div class="prob-fill" style="width:52%;background:#f59e0b"></div></div>
       <span class="prob-lbl">Bull</span>
     </div>
-    <a href="thesis.html" class="view-btn">View Thesis →</a>
+    <a href="thesis.html?symbol=TSLA" class="view-btn">View Thesis →</a>
     <button class="del-btn" onclick="deleteRow(this)" title="Remove from watchlist">×</button>
   </div>
 
   <!-- META -->
-  <div class="stock-row" data-sector="social">
+  <div class="stock-row" data-sector="social" data-symbol="META">
     <span class="rank">3</span>
     <div class="ticker-block">
       <span class="ticker">META</span>
@@ -532,12 +532,12 @@
       <div class="prob-bar"><div class="prob-fill" style="width:74%;background:#22c55e"></div></div>
       <span class="prob-lbl">Bull</span>
     </div>
-    <a href="thesis.html" class="view-btn">View Thesis →</a>
+    <a href="thesis.html?symbol=META" class="view-btn">View Thesis →</a>
     <button class="del-btn" onclick="deleteRow(this)" title="Remove from watchlist">×</button>
   </div>
 
   <!-- AMZN -->
-  <div class="stock-row" data-sector="cloud">
+  <div class="stock-row" data-sector="cloud" data-symbol="AMZN">
     <span class="rank">4</span>
     <div class="ticker-block">
       <span class="ticker">AMZN</span>
@@ -569,12 +569,12 @@
       <div class="prob-bar"><div class="prob-fill" style="width:72%;background:#22c55e"></div></div>
       <span class="prob-lbl">Bull</span>
     </div>
-    <a href="thesis.html" class="view-btn">View Thesis →</a>
+    <a href="thesis.html?symbol=AMZN" class="view-btn">View Thesis →</a>
     <button class="del-btn" onclick="deleteRow(this)" title="Remove from watchlist">×</button>
   </div>
 
   <!-- MSFT -->
-  <div class="stock-row" data-sector="cloud">
+  <div class="stock-row" data-sector="cloud" data-symbol="MSFT">
     <span class="rank">5</span>
     <div class="ticker-block">
       <span class="ticker">MSFT</span>
@@ -606,12 +606,12 @@
       <div class="prob-bar"><div class="prob-fill" style="width:85%;background:#3cffd0"></div></div>
       <span class="prob-lbl">Bull</span>
     </div>
-    <a href="thesis.html" class="view-btn">View Thesis →</a>
+    <a href="thesis.html?symbol=MSFT" class="view-btn">View Thesis →</a>
     <button class="del-btn" onclick="deleteRow(this)" title="Remove from watchlist">×</button>
   </div>
 
   <!-- AAPL -->
-  <div class="stock-row" data-sector="consumer">
+  <div class="stock-row" data-sector="consumer" data-symbol="AAPL">
     <span class="rank">6</span>
     <div class="ticker-block">
       <span class="ticker">AAPL</span>
@@ -643,7 +643,7 @@
       <div class="prob-bar"><div class="prob-fill" style="width:82%;background:#3cffd0"></div></div>
       <span class="prob-lbl">Bull</span>
     </div>
-    <a href="thesis.html" class="view-btn">View Thesis →</a>
+    <a href="thesis.html?symbol=AAPL" class="view-btn">View Thesis →</a>
     <button class="del-btn" onclick="deleteRow(this)" title="Remove from watchlist">×</button>
   </div>
 
@@ -659,14 +659,15 @@
   <div class="modal">
     <button class="modal-close" onclick="closeModal()">×</button>
     <h3>Add to <span>Watchlist</span></h3>
+    <p style="font-size:12px;color:var(--muted);margin-bottom:16px">Enter a US stock ticker. We'll look up price target, upside, and analyst rating automatically.</p>
     <div class="form-grid">
-      <div class="form-field">
-        <label>Symbol</label>
-        <input id="f-symbol" type="text" placeholder="e.g. GOOGL" maxlength="6" style="text-transform:uppercase"/>
+      <div class="form-field" style="grid-column:1/-1">
+        <label>Stock Symbol</label>
+        <input id="f-symbol" type="text" placeholder="e.g. GOOGL, AMZN, NFLX" maxlength="6" style="text-transform:uppercase;font-size:18px;font-weight:600;letter-spacing:0.1em"/>
       </div>
-      <div class="form-field">
-        <label>Company Name</label>
-        <input id="f-name" type="text" placeholder="e.g. Alphabet Inc."/>
+      <div class="form-field" style="grid-column:1/-1">
+        <label>Company Name <span style="color:var(--muted);font-weight:400">(optional — auto-filled from API)</span></label>
+        <input id="f-name" type="text" placeholder="Leave blank to auto-detect"/>
       </div>
       <div class="form-field">
         <label>Sector</label>
@@ -680,32 +681,22 @@
           <option value="other">Other</option>
         </select>
       </div>
-      <div class="form-field">
-        <label>Current Price ($)</label>
-        <input id="f-price" type="number" placeholder="e.g. 175.00" step="0.01"/>
-      </div>
-      <div class="form-field">
-        <label>Upside % Target</label>
-        <input id="f-upside" type="text" placeholder="e.g. +85%"/>
-      </div>
-      <div class="form-field">
-        <label>Analyst Rating</label>
-        <select id="f-analyst">
-          <option value="strong-buy">Strong Buy</option>
-          <option value="buy">Buy</option>
-          <option value="hold">Hold</option>
-          <option value="sell">Sell</option>
-        </select>
-      </div>
     </div>
+    <div id="f-lookup-result" style="display:none;margin:12px 0;padding:12px;background:var(--s2);border-radius:8px;border:1px solid var(--border);font-size:12px"></div>
     <div class="modal-actions">
       <button class="btn-cancel" onclick="closeModal()">Cancel</button>
-      <button class="btn-add-submit" onclick="addStock()">Add to Watchlist</button>
+      <button class="btn-add-submit" id="btn-lookup" onclick="lookupAndAdd()">
+        <span id="btn-lookup-txt">Lookup &amp; Add →</span>
+      </button>
     </div>
   </div>
 </div>
 
 <script>
+  /* ── Persistence keys ── */
+  const LS_EXTRA   = 'stock10x_extra';    // stocks added by user
+  const LS_DELETED = 'stock10x_deleted';  // symbols removed from default list
+
   /* ── Filter ── */
   function setFilter(el, val) {
     document.querySelectorAll('.fpill').forEach(p => p.classList.remove('on'));
@@ -718,24 +709,29 @@
   /* ── Delete ── */
   function deleteRow(btn) {
     const row = btn.closest('.stock-row');
+    const sym = row.dataset.symbol;
+
+    // Persist deletion
+    try {
+      const deleted = JSON.parse(localStorage.getItem(LS_DELETED) || '[]');
+      if (sym && !deleted.includes(sym)) deleted.push(sym);
+      localStorage.setItem(LS_DELETED, JSON.stringify(deleted));
+
+      // Remove from extras if it was user-added
+      const extra = JSON.parse(localStorage.getItem(LS_EXTRA) || '[]');
+      localStorage.setItem(LS_EXTRA, JSON.stringify(extra.filter(s => s.symbol !== sym)));
+    } catch(e) {}
+
     row.style.transition = 'opacity 200ms, max-height 300ms';
     row.style.opacity = '0';
     row.style.overflow = 'hidden';
     row.style.maxHeight = row.offsetHeight + 'px';
-    requestAnimationFrame(() => {
-      row.style.maxHeight = '0';
-      row.style.padding = '0';
-    });
-    setTimeout(() => {
-      row.remove();
-      renumberRows();
-    }, 320);
+    requestAnimationFrame(() => { row.style.maxHeight = '0'; row.style.padding = '0'; });
+    setTimeout(() => { row.remove(); renumberRows(); }, 320);
   }
 
   function renumberRows() {
-    document.querySelectorAll('.stock-row .rank').forEach((el, i) => {
-      el.textContent = i + 1;
-    });
+    document.querySelectorAll('.stock-row .rank').forEach((el, i) => { el.textContent = i + 1; });
   }
 
   /* ── Modal ── */
@@ -746,57 +742,35 @@
 
   function closeModal() {
     document.getElementById('addModal').classList.remove('open');
-    ['f-symbol','f-name','f-price','f-upside'].forEach(id => {
-      document.getElementById(id).value = '';
-    });
+    ['f-symbol','f-name'].forEach(id => { document.getElementById(id).value = ''; });
+    const res = document.getElementById('f-lookup-result');
+    res.style.display = 'none'; res.innerHTML = '';
+    document.getElementById('btn-lookup-txt').textContent = 'Lookup & Add →';
+    document.getElementById('btn-lookup').disabled = false;
   }
 
   function handleBackdropClick(e) {
     if (e.target === document.getElementById('addModal')) closeModal();
   }
 
-  document.addEventListener('keydown', e => {
-    if (e.key === 'Escape') closeModal();
-  });
+  document.addEventListener('keydown', e => { if (e.key === 'Escape') closeModal(); });
 
-  /* ── Add Stock ── */
-  const ANALYST_LABELS = {
-    'strong-buy': 'Strong Buy',
-    'buy': 'Buy',
-    'hold': 'Hold',
-    'sell': 'Sell'
-  };
+  /* ── Build row HTML ── */
   const SECTOR_LABELS = {
     'ai': 'AI · Semis', 'cloud': 'Cloud', 'ev': 'EV · Mobility',
-    'social': 'Social', 'consumer': 'Consumer Tech',
-    'fintech': 'Fintech', 'other': 'Other'
+    'social': 'Social', 'consumer': 'Consumer Tech', 'fintech': 'Fintech', 'other': 'Other'
   };
+  const API_BASE = 'https://stock10x.vercel.app/api';
 
-  function addStock() {
-    const symbol  = document.getElementById('f-symbol').value.trim().toUpperCase();
-    const name    = document.getElementById('f-name').value.trim();
-    const sector  = document.getElementById('f-sector').value;
-    const price   = document.getElementById('f-price').value.trim();
-    const upside  = document.getElementById('f-upside').value.trim() || '—';
-    const analyst = document.getElementById('f-analyst').value;
-
-    if (!symbol || !name) {
-      document.getElementById('f-symbol').focus();
-      return;
-    }
-
-    const rows = document.querySelectorAll('.stock-row');
-    const rank = rows.length + 1;
-    const upsideClass = upside.startsWith('+') ? (parseInt(upside) >= 80 ? 'high' : 'mid') : 'low';
-    const analystClass = analyst;
-    const analystLabel = ANALYST_LABELS[analyst];
-    const sectorLabel = SECTOR_LABELS[sector] || sector;
-
-    const row = document.createElement('div');
-    row.className = 'stock-row';
-    row.dataset.sector = sector;
-    row.style.opacity = '0';
-    row.innerHTML = `
+  let _rowCounter = 0;
+  function buildRowHTML(symbol, name, sector, price, action, target, upside, rank) {
+    const id = ++_rowCounter;
+    const analystClass = (action || 'hold').toLowerCase().replace(' ', '-');
+    const upsideVal    = upside || '—';
+    const upsideClass  = upsideVal.startsWith('+') ? (parseInt(upsideVal) >= 80 ? 'high' : 'mid') : 'low';
+    const sectorLabel  = SECTOR_LABELS[sector] || sector || 'Other';
+    const opp = (target && price) ? '+' + Math.round(((target - price) / price) * 100) + '%' : '—';
+    return `
       <span class="rank">${rank}</span>
       <div class="ticker-block">
         <span class="ticker">${symbol}</span>
@@ -805,35 +779,128 @@
       <span class="sector-pill">${sectorLabel}</span>
       <div class="spark">
         <svg viewBox="0 0 140 40" width="140" height="40">
-          <path d="M0,20 L35,18 L70,20 L105,18 L140,20" fill="none" stroke="#949494" stroke-width="1.5" stroke-dasharray="4 3" stroke-linecap="round"/>
+          <defs><linearGradient id="sg${id}" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0%" stop-color="#3cffd0" stop-opacity="0.25"/>
+            <stop offset="100%" stop-color="#3cffd0" stop-opacity="0"/>
+          </linearGradient></defs>
+          <path d="M0,28 L35,22 L70,18 L105,14 L140,10" fill="url(#sg${id})" stroke="#3cffd0" stroke-width="1.5" stroke-linecap="round"/>
+          <circle cx="140" cy="10" r="2.5" fill="#3cffd0"/>
           <text x="2" y="9" font-size="6" fill="#949494" font-family="monospace">1M</text>
         </svg>
       </div>
-      <div class="price-col">${price ? '$' + parseFloat(price).toFixed(2) : '—'}<small>MCap —</small><small>Shares —</small></div>
+      <div class="price-col">${price ? '$' + price.toFixed(2) : '—'}<small>MCap —</small><small>Shares —</small></div>
       <span class="ytd-col pos">—</span>
-      <span class="opp5y-col">—</span>
-      <span class="upside ${upsideClass}">${upside}</span>
-      <span class="horizon">—</span>
-      <span class="analyst-pill ${analystClass}">${analystLabel}</span>
+      <span class="opp5y-col">${opp}</span>
+      <span class="upside ${upsideClass}">${upsideVal}</span>
+      <span class="horizon">2030</span>
+      <span class="analyst-pill ${analystClass}">${action || 'Hold'}</span>
       <div class="prob-wrap">
         <span class="prob-num" style="color:#949494">—</span>
         <div class="prob-bar"><div class="prob-fill" style="width:0%;background:#949494"></div></div>
         <span class="prob-lbl">Bull</span>
       </div>
-      <a href="thesis.html" class="view-btn">View Thesis →</a>
+      <a href="thesis.html?symbol=${symbol}" class="view-btn">View Thesis →</a>
       <button class="del-btn" onclick="deleteRow(this)" title="Remove from watchlist">×</button>
     `;
+  }
+
+  /* ── Add Stock via API lookup ── */
+  async function lookupAndAdd() {
+    const symbol = document.getElementById('f-symbol').value.trim().toUpperCase();
+    if (!symbol) { document.getElementById('f-symbol').focus(); return; }
+
+    const btn    = document.getElementById('btn-lookup');
+    const btnTxt = document.getElementById('btn-lookup-txt');
+    const res    = document.getElementById('f-lookup-result');
+
+    btn.disabled = true;
+    btnTxt.textContent = 'Looking up…';
+    res.style.display = 'none';
+
+    let data = null;
+    try {
+      const resp = await fetch(`${API_BASE}/stock/${symbol}`);
+      if (resp.ok) data = await resp.json();
+    } catch(e) {}
+
+    const name   = document.getElementById('f-name').value.trim() || (data && data.name) || symbol;
+    const sector = document.getElementById('f-sector').value;
+    const price  = data ? data.currentPrice  : null;
+    const action = data ? data.action        : 'Hold';
+    const target = data ? data.priceTarget2030 : null;
+    const upside = data ? data.upsidePercent : '—';
+
+    if (data) {
+      res.style.display = 'block';
+      res.innerHTML = `<span style="color:var(--accent);font-weight:600">${data.symbol}</span>
+        <span style="color:var(--muted);margin-left:8px">${data.name}</span><br>
+        <span style="color:var(--muted)">Price: </span><strong>$${data.currentPrice}</strong>
+        &nbsp;&nbsp;<span style="color:var(--muted)">Target 2030: </span><strong style="color:var(--accent)">$${data.priceTarget2030}</strong>
+        &nbsp;&nbsp;<span style="color:var(--muted)">Action: </span><strong>${data.action}</strong>`;
+    } else {
+      res.style.display = 'block';
+      res.innerHTML = `<span style="color:var(--amber)">⚠ Symbol not in database — added with placeholder data. Build your thesis manually.</span>`;
+    }
+
+    const stockData = { symbol, name: data ? data.name : name, sector, price, action, target, upside };
+
+    // Persist to localStorage
+    try {
+      const extra = JSON.parse(localStorage.getItem(LS_EXTRA) || '[]');
+      if (!extra.find(s => s.symbol === symbol)) extra.push(stockData);
+      else Object.assign(extra.find(s => s.symbol === symbol), stockData);
+      localStorage.setItem(LS_EXTRA, JSON.stringify(extra));
+
+      // Remove from deleted list if re-adding
+      const deleted = JSON.parse(localStorage.getItem(LS_DELETED) || '[]');
+      localStorage.setItem(LS_DELETED, JSON.stringify(deleted.filter(s => s !== symbol)));
+    } catch(e) {}
+
+    const rank = document.querySelectorAll('.stock-row').length + 1;
+    const row = document.createElement('div');
+    row.className = 'stock-row';
+    row.dataset.sector = sector;
+    row.dataset.symbol = symbol;
+    row.style.opacity = '0';
+    row.innerHTML = buildRowHTML(symbol, data ? data.name : name, sector, price, action, target, upside, rank);
 
     const addBtn = document.querySelector('.add-row');
     addBtn.parentNode.insertBefore(row, addBtn);
+    requestAnimationFrame(() => { row.style.transition = 'opacity 250ms'; row.style.opacity = '1'; });
 
-    requestAnimationFrame(() => {
-      row.style.transition = 'opacity 250ms';
-      row.style.opacity = '1';
-    });
-
-    closeModal();
+    btn.disabled = false;
+    btnTxt.textContent = 'Lookup & Add →';
+    setTimeout(closeModal, data ? 800 : 400);
   }
+
+  /* ── Restore persisted state on page load ── */
+  (function restoreWatchlist() {
+    try {
+      const deleted = JSON.parse(localStorage.getItem(LS_DELETED) || '[]');
+      const extra   = JSON.parse(localStorage.getItem(LS_EXTRA)   || '[]');
+
+      // Remove default rows that were deleted
+      deleted.forEach(sym => {
+        const row = document.querySelector(`.stock-row[data-symbol="${sym}"]`);
+        if (row) row.remove();
+      });
+
+      // Re-add user-added stocks
+      const addBtn = document.querySelector('.add-row');
+      extra.forEach((s, i) => {
+        if (document.querySelector(`.stock-row[data-symbol="${s.symbol}"]`)) return; // already in DOM
+        const rank = document.querySelectorAll('.stock-row').length + 1;
+        const row = document.createElement('div');
+        row.className = 'stock-row';
+        row.dataset.sector = s.sector || 'other';
+        row.dataset.symbol = s.symbol;
+        row.innerHTML = buildRowHTML(s.symbol, s.name, s.sector, s.price, s.action, s.target, s.upside, rank);
+        addBtn.parentNode.insertBefore(row, addBtn);
+      });
+
+      renumberRows();
+    } catch(e) {}
+  })();
 </script>
 </body>
 </html>
