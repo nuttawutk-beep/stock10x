@@ -1,0 +1,17 @@
+{
+  "name": "stock10x",
+  "version": "2.0.0",
+  "description": "Stock10x — 10x Conviction Investing Platform",
+  "main": "api.js",
+  "scripts": {
+    "start": "node api.js",
+    "dev": "node --watch api.js"
+  },
+  "dependencies": {
+    "@supabase/supabase-js": "^2.45.0",
+    "express": "^4.18.2"
+  },
+  "engines": {
+    "node": ">=18"
+  }
+}

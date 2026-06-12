@@ -1,0 +1,1023 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Stock10x — NVDA Thesis</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Anton&family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #131313; --surface: #1c1c1c; --s2: #252525; --s3: #2d2d2d;
+      --fg: #fff; --muted: #949494; --border: #2a2a2a;
+      --accent: #3cffd0; --uv: #5200ff; --hover: #3860be;
+      --green: #22c55e; --amber: #f59e0b; --red: #ef4444;
+      --font-d: 'Anton', Impact, Helvetica, sans-serif;
+      --font-b: 'Inter', -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
+      --font-m: 'JetBrains Mono', ui-monospace, Menlo, monospace;
+    }
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      background: var(--bg); color: var(--fg);
+      font-family: var(--font-b); -webkit-font-smoothing: antialiased;
+    }
+
+    /* NAV */
+    nav {
+      position: sticky; top: 0; z-index: 100;
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 0 40px; height: 60px;
+      background: rgba(19,19,19,0.96); backdrop-filter: blur(14px);
+      border-bottom: 1px solid var(--border);
+    }
+    .nav-logo { font-family: var(--font-d); font-size: 18px; letter-spacing: 0.05em; color: var(--fg); text-decoration: none; }
+    .nav-logo span { color: var(--accent); }
+    .nav-links { display: flex; gap: 24px; list-style: none; }
+    .nav-links a {
+      font-family: var(--font-m); font-size: 10px; font-weight: 600;
+      letter-spacing: 1.5px; text-transform: uppercase;
+      color: var(--muted); text-decoration: none; transition: color 150ms;
+    }
+    .nav-links a:hover { color: var(--hover); }
+    .back-link {
+      font-family: var(--font-m); font-size: 10px; font-weight: 600;
+      letter-spacing: 1.2px; text-transform: uppercase;
+      color: var(--muted); text-decoration: none; transition: color 150ms;
+      display: flex; align-items: center; gap: 6px;
+    }
+    .back-link:hover { color: var(--accent); }
+
+    /* STOCK HEADER */
+    .stock-header {
+      background: var(--surface);
+      border-bottom: 1px solid var(--border);
+      padding: 24px 40px 20px;
+    }
+    .stock-meta {
+      display: flex; align-items: baseline; gap: 14px; flex-wrap: wrap;
+      margin-bottom: 16px;
+    }
+    .sticker {
+      font-family: var(--font-d); font-size: 36px;
+      letter-spacing: 0.04em; color: var(--accent);
+    }
+    .sname { font-size: 18px; font-weight: 300; color: var(--fg); }
+    .scat {
+      font-family: var(--font-m); font-size: 9px; font-weight: 600;
+      letter-spacing: 1.4px; text-transform: uppercase;
+      background: var(--s2); border: 1px solid var(--border);
+      padding: 3px 9px; border-radius: 10px; color: var(--muted);
+    }
+    .kpi-strip {
+      display: flex; gap: 0; flex-wrap: wrap;
+    }
+    .kpi {
+      padding: 10px 20px; border-right: 1px solid var(--border);
+      min-width: 120px;
+    }
+    .kpi:first-child { padding-left: 0; }
+    .kpi:last-child { border-right: none; }
+    .kpi-v { font-family: var(--font-m); font-size: 16px; font-weight: 600; color: var(--fg); }
+    .kpi-v.accent { color: var(--accent); }
+    .kpi-v.green { color: var(--green); }
+    .kpi-v.amber { color: var(--amber); }
+    .kpi-l { font-family: var(--font-m); font-size: 9px; font-weight: 500; letter-spacing: 1.3px; text-transform: uppercase; color: var(--muted); margin-top: 3px; }
+    .kpi-th { font-size: 10px; color: var(--muted); opacity: 0.6; margin-top: 1px; }
+
+    /* SCENARIO CHIPS — always visible */
+    .scenario-strip {
+      display: flex; gap: 8px; padding: 12px 40px;
+      border-bottom: 1px solid var(--border);
+      overflow-x: auto; background: var(--bg);
+    }
+    .s-chip {
+      display: flex; flex-direction: column; gap: 3px;
+      padding: 10px 16px; border-radius: 12px; border: 1px solid;
+      min-width: 120px; flex-shrink: 0;
+    }
+    .s-chip.bull { border-color: rgba(60,255,208,0.3); background: rgba(60,255,208,0.05); }
+    .s-chip.base { border-color: rgba(34,197,94,0.3); background: rgba(34,197,94,0.04); }
+    .s-chip.bear { border-color: rgba(239,68,68,0.3); background: rgba(239,68,68,0.04); }
+    .s-label {
+      font-family: var(--font-m); font-size: 9px; font-weight: 600;
+      letter-spacing: 1.5px; text-transform: uppercase;
+    }
+    .s-chip.bull .s-label { color: var(--accent); }
+    .s-chip.base .s-label { color: var(--green); }
+    .s-chip.bear .s-label { color: var(--red); }
+    .s-price { font-family: var(--font-m); font-size: 15px; font-weight: 600; color: var(--fg); }
+    .s-pct { font-size: 11px; color: var(--muted); }
+
+    /* TABS */
+    .tabs-bar {
+      display: flex; padding: 0 40px;
+      border-bottom: 1px solid var(--border);
+      overflow-x: auto; background: var(--bg);
+    }
+    .tab {
+      font-family: var(--font-m); font-size: 10px; font-weight: 600;
+      letter-spacing: 1.3px; text-transform: uppercase;
+      color: var(--muted); padding: 16px 18px;
+      border-bottom: 2px solid transparent;
+      cursor: pointer; white-space: nowrap;
+      transition: color 150ms, border-color 150ms;
+      background: none; border-left: none; border-right: none; border-top: none;
+    }
+    .tab:hover { color: var(--fg); }
+    .tab.active { color: var(--fg); border-bottom-color: var(--accent); }
+
+    /* CONTENT AREA */
+    .content { max-width: 1200px; margin: 0 auto; padding: 32px 40px 80px; }
+    .panel { display: none; }
+    .panel.active { display: block; }
+
+    /* COMMON CONTENT BLOCKS */
+    .section-title {
+      font-family: var(--font-m); font-size: 10px; font-weight: 600;
+      letter-spacing: 1.6px; text-transform: uppercase;
+      color: var(--accent); margin-bottom: 12px;
+      display: flex; align-items: center; gap: 8px;
+    }
+    .section-title::after { content: ''; flex: 1; height: 1px; background: var(--border); }
+    .card {
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: 14px; padding: 20px;
+    }
+    .grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+    .grid3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 16px; }
+    h3 { font-size: 16px; font-weight: 600; margin-bottom: 8px; }
+    p { font-size: 13px; line-height: 1.7; color: var(--muted); }
+    p strong { color: var(--fg); }
+
+    /* NARRATIVE */
+    .narrative-block {
+      border-left: 2px solid var(--accent);
+      padding-left: 20px; margin-bottom: 24px;
+    }
+    .narrative-block p { font-size: 15px; font-weight: 300; color: var(--fg); line-height: 1.8; }
+    .narrative-sub { font-size: 12px; color: var(--muted); margin-top: 8px; }
+
+    /* 7 POWERS */
+    .power-row {
+      display: flex; align-items: center; gap: 12px;
+      padding: 12px 0 12px 14px; border-bottom: 1px solid var(--border);
+      border-left: 2px solid transparent;
+    }
+    .power-row:last-child { border-bottom: none; }
+    .power-name { flex: 0 0 180px; font-size: 13px; font-weight: 600; }
+    .power-stars { flex: 0 0 90px; font-size: 14px; letter-spacing: 2px; }
+    .power-grade {
+      flex: 0 0 80px;
+      font-family: var(--font-m); font-size: 10px; font-weight: 600;
+      letter-spacing: 1px; text-transform: uppercase;
+      padding: 3px 10px; border-radius: 20px; text-align: center;
+      border: 1px solid transparent;
+    }
+    .power-desc { font-size: 12px; color: var(--muted); line-height: 1.5; flex: 1; }
+
+    /* Per-power colors — one unique hue per strategic type */
+    .p1 { border-left-color: #3b82f6; }
+    .p1 .power-name { color: #3b82f6; }
+    .p1 .power-stars { color: #3b82f6; }
+    .p1 .power-grade { background: rgba(59,130,246,0.12); color: #3b82f6; border-color: rgba(59,130,246,0.25); }
+
+    .p2 { border-left-color: #8b5cf6; }
+    .p2 .power-name { color: #8b5cf6; }
+    .p2 .power-stars { color: #8b5cf6; }
+    .p2 .power-grade { background: rgba(139,92,246,0.12); color: #8b5cf6; border-color: rgba(139,92,246,0.25); }
+
+    .p3 { border-left-color: #f97316; }
+    .p3 .power-name { color: #f97316; }
+    .p3 .power-stars { color: #f97316; }
+    .p3 .power-grade { background: rgba(249,115,22,0.12); color: #f97316; border-color: rgba(249,115,22,0.25); }
+
+    .p4 { border-left-color: #ef4444; }
+    .p4 .power-name { color: #ef4444; }
+    .p4 .power-stars { color: #ef4444; }
+    .p4 .power-grade { background: rgba(239,68,68,0.12); color: #ef4444; border-color: rgba(239,68,68,0.25); }
+
+    .p5 { border-left-color: #ec4899; }
+    .p5 .power-name { color: #ec4899; }
+    .p5 .power-stars { color: #ec4899; }
+    .p5 .power-grade { background: rgba(236,72,153,0.12); color: #ec4899; border-color: rgba(236,72,153,0.25); }
+
+    .p6 { border-left-color: #eab308; }
+    .p6 .power-name { color: #eab308; }
+    .p6 .power-stars { color: #eab308; }
+    .p6 .power-grade { background: rgba(234,179,8,0.12); color: #eab308; border-color: rgba(234,179,8,0.25); }
+
+    .p7 { border-left-color: #22c55e; }
+    .p7 .power-name { color: #22c55e; }
+    .p7 .power-stars { color: #22c55e; }
+    .p7 .power-grade { background: rgba(34,197,94,0.12); color: #22c55e; border-color: rgba(34,197,94,0.25); }
+
+    /* SWOT */
+    .swot-grid {
+      display: grid; grid-template-columns: 1fr 1fr;
+      grid-template-rows: 1fr 1fr; gap: 12px;
+      margin-top: 12px;
+    }
+    .swot-q { border-radius: 12px; padding: 16px; border: 1px solid; }
+    .swot-q.s { border-color: rgba(60,255,208,0.3); background: rgba(60,255,208,0.05); }
+    .swot-q.w { border-color: rgba(239,68,68,0.3); background: rgba(239,68,68,0.04); }
+    .swot-q.o { border-color: rgba(34,197,94,0.25); background: rgba(34,197,94,0.04); }
+    .swot-q.t { border-color: rgba(245,158,11,0.3); background: rgba(245,158,11,0.04); }
+    .swot-label {
+      font-family: var(--font-m); font-size: 9px; font-weight: 600;
+      letter-spacing: 1.5px; text-transform: uppercase; margin-bottom: 10px;
+    }
+    .swot-q.s .swot-label { color: var(--accent); }
+    .swot-q.w .swot-label { color: var(--red); }
+    .swot-q.o .swot-label { color: var(--green); }
+    .swot-q.t .swot-label { color: var(--amber); }
+    .swot-q ul { list-style: none; display: flex; flex-direction: column; gap: 5px; }
+    .swot-q li { font-size: 12px; color: var(--fg); display: flex; gap: 6px; align-items: flex-start; }
+    .swot-q li::before { content: '—'; color: var(--muted); flex-shrink: 0; }
+
+    /* TAM LINE CHART */
+    .tam-chart-wrap { margin-top: 12px; }
+
+    /* KEY PLAYERS */
+    .player-card {
+      background: var(--s2); border: 1px solid var(--border);
+      border-radius: 12px; padding: 16px;
+    }
+    .player-name { font-size: 14px; font-weight: 600; color: var(--fg); margin-bottom: 2px; }
+    .player-role {
+      font-family: var(--font-m); font-size: 9px; font-weight: 600;
+      letter-spacing: 1.3px; text-transform: uppercase; color: var(--accent); margin-bottom: 8px;
+    }
+    .player-note { font-size: 12px; color: var(--muted); line-height: 1.5; }
+
+    /* FINANCIALS TABLE */
+    .fin-table { width: 100%; border-collapse: collapse; margin-top: 12px; }
+    .fin-table th {
+      font-family: var(--font-m); font-size: 9px; font-weight: 600;
+      letter-spacing: 1.3px; text-transform: uppercase;
+      color: var(--muted); text-align: right; padding: 8px 12px;
+      border-bottom: 1px solid var(--border);
+    }
+    .fin-table th:first-child { text-align: left; }
+    .fin-table td {
+      font-size: 13px; padding: 10px 12px;
+      border-bottom: 1px solid rgba(42,42,42,0.6);
+      text-align: right; color: var(--fg);
+    }
+    .fin-table td:first-child { text-align: left; color: var(--muted); font-size: 12px; }
+    .fin-table .est { color: var(--accent); }
+    .fin-table tr:last-child td { border-bottom: none; }
+    .fin-table .highlight td { background: rgba(60,255,208,0.04); }
+
+    /* VALUATION ROWS */
+    .val-row {
+      display: flex; align-items: center; gap: 12px;
+      padding: 12px 0; border-bottom: 1px solid var(--border);
+      flex-wrap: wrap;
+    }
+    .val-row:last-child { border-bottom: none; }
+    .val-method { flex: 0 0 200px; font-size: 13px; font-weight: 500; }
+    .val-price {
+      flex: 0 0 80px;
+      font-family: var(--font-m); font-size: 14px; font-weight: 600; color: var(--accent);
+    }
+    .val-note { font-size: 12px; color: var(--muted); flex: 1; }
+    .analyst-dist {
+      display: flex; gap: 0; margin-top: 12px;
+      border: 1px solid var(--border); border-radius: 10px; overflow: hidden;
+    }
+    .ad-seg { padding: 12px 16px; flex: 1; border-right: 1px solid var(--border); }
+    .ad-seg:last-child { border-right: none; }
+    .ad-num { font-family: var(--font-m); font-size: 20px; font-weight: 600; }
+    .ad-seg:nth-child(1) .ad-num { color: var(--accent); }
+    .ad-seg:nth-child(2) .ad-num { color: var(--amber); }
+    .ad-seg:nth-child(3) .ad-num { color: var(--red); }
+    .ad-lbl { font-family: var(--font-m); font-size: 9px; font-weight: 500; letter-spacing: 1.3px; text-transform: uppercase; color: var(--muted); margin-top: 3px; }
+
+    /* SCENARIO CARDS (in panel) */
+    .scenario-cards { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 16px; margin-top: 12px; }
+    .sc-card { border-radius: 16px; padding: 22px; border: 1px solid; }
+    .sc-card.bull { border-color: rgba(60,255,208,0.3); background: rgba(60,255,208,0.06); }
+    .sc-card.base { border-color: rgba(34,197,94,0.3); background: rgba(34,197,94,0.05); }
+    .sc-card.bear { border-color: rgba(239,68,68,0.3); background: rgba(239,68,68,0.05); }
+    .sc-head {
+      font-family: var(--font-m); font-size: 10px; font-weight: 600;
+      letter-spacing: 1.5px; text-transform: uppercase; margin-bottom: 12px;
+    }
+    .sc-card.bull .sc-head { color: var(--accent); }
+    .sc-card.base .sc-head { color: var(--green); }
+    .sc-card.bear .sc-head { color: var(--red); }
+    .sc-price { font-family: var(--font-d); font-size: 36px; line-height: 1; margin-bottom: 4px; }
+    .sc-return { font-family: var(--font-m); font-size: 13px; font-weight: 600; margin-bottom: 12px; }
+    .sc-card.bull .sc-return { color: var(--accent); }
+    .sc-card.base .sc-return { color: var(--green); }
+    .sc-card.bear .sc-return { color: var(--red); }
+    .sc-divider { height: 1px; background: var(--border); margin: 12px 0; }
+    .sc-assumptions { font-size: 12px; color: var(--muted); line-height: 1.7; }
+    .sc-assumptions li { padding: 3px 0; }
+    .sc-prob {
+      display: inline-block; margin-top: 12px;
+      font-family: var(--font-m); font-size: 10px; font-weight: 600;
+      letter-spacing: 1px; text-transform: uppercase;
+      padding: 4px 12px; border-radius: 20px;
+    }
+    .sc-card.bull .sc-prob { background: rgba(60,255,208,0.12); color: var(--accent); }
+    .sc-card.base .sc-prob { background: rgba(34,197,94,0.12); color: var(--green); }
+    .sc-card.bear .sc-prob { background: rgba(239,68,68,0.12); color: var(--red); }
+
+    /* UPSIDE BAR VIZ (overview) */
+    .upside-bar-wrap { display: flex; align-items: center; gap: 12px; margin: 20px 0; }
+    .upside-track {
+      flex: 1; height: 8px; background: var(--s3);
+      border-radius: 4px; position: relative; overflow: visible;
+    }
+    .upside-current {
+      position: absolute; top: -4px; bottom: -4px; width: 2px;
+      background: var(--muted); border-radius: 1px;
+    }
+    .upside-range {
+      height: 100%; border-radius: 4px;
+    }
+    .upside-labels { display: flex; justify-content: space-between; margin-top: 4px; }
+    .upside-labels span { font-family: var(--font-m); font-size: 9px; color: var(--muted); }
+
+    @media (max-width: 900px) {
+      .stock-header { padding: 20px 16px 16px; }
+      .scenario-strip { padding: 12px 16px; }
+      .tabs-bar { padding: 0 16px; }
+      .content { padding: 24px 16px 60px; }
+      nav { padding: 0 16px; }
+      .nav-links { display: none; }
+      .kpi { min-width: 80px; padding: 8px 12px; }
+      .grid2, .grid3 { grid-template-columns: 1fr; }
+      .scenario-cards { grid-template-columns: 1fr; }
+      .swot-grid { grid-template-columns: 1fr; }
+      .tbl-head { display: none; }
+      .power-name { flex: 0 0 130px; }
+      .power-grade { display: none; }
+    }
+  </style>
+</head>
+<body>
+
+<nav>
+  <a href="index.html" class="nav-logo">STOCK<span>10X</span></a>
+  <ul class="nav-links">
+    <li><a href="dashboard.html">← Dashboard</a></li>
+    <li><a href="#">Research Papers</a></li>
+    <li><a href="#">Export PDF</a></li>
+  </ul>
+  <a href="dashboard.html" class="back-link">← Dashboard</a>
+</nav>
+
+<!-- STOCK HEADER -->
+<div class="stock-header">
+  <div class="stock-meta">
+    <span class="sticker">NVDA</span>
+    <span class="sname">NVIDIA Corporation</span>
+    <span class="scat">AI · Semiconductors</span>
+    <span class="scat">NASDAQ</span>
+  </div>
+  <div class="kpi-strip">
+    <div class="kpi">
+      <div class="kpi-v">$875.40</div>
+      <div class="kpi-l">Current Price</div>
+    </div>
+    <div class="kpi">
+      <div class="kpi-v accent">$1,450</div>
+      <div class="kpi-l">Price Target</div>
+    </div>
+    <div class="kpi">
+      <div class="kpi-v green">+65.7%</div>
+      <div class="kpi-l">Upside</div>
+    </div>
+    <div class="kpi">
+      <div class="kpi-v">18M</div>
+      <div class="kpi-l">Time Horizon</div>
+    </div>
+    <div class="kpi">
+      <div class="kpi-v accent">78%</div>
+      <div class="kpi-l">Bull Probability</div>
+    </div>
+    <div class="kpi">
+      <div class="kpi-v">$2.16T</div>
+      <div class="kpi-l">Market Cap</div>
+    </div>
+  </div>
+</div>
+
+<!-- SCENARIO STRIP -->
+<div class="scenario-strip">
+  <span style="font-family:var(--font-m);font-size:9px;letter-spacing:1.4px;text-transform:uppercase;color:var(--muted);align-self:center;padding-right:4px;flex-shrink:0">Scenarios</span>
+  <div class="s-chip bull">
+    <span class="s-label">🐂 Bull</span>
+    <span class="s-price">$2,200</span>
+    <span class="s-pct">+151% · 35% prob</span>
+  </div>
+  <div class="s-chip base">
+    <span class="s-label">📊 Base</span>
+    <span class="s-price">$1,400</span>
+    <span class="s-pct">+60% · 43% prob</span>
+  </div>
+  <div class="s-chip bear">
+    <span class="s-label">🐻 Bear</span>
+    <span class="s-price">$600</span>
+    <span class="s-pct">−31% · 22% prob</span>
+  </div>
+</div>
+
+<!-- TABS -->
+<div class="tabs-bar">
+  <button class="tab active" onclick="showTab('overview')">Overview</button>
+  <button class="tab" onclick="showTab('fundamentals')">Fundamentals</button>
+  <button class="tab" onclick="showTab('thesis')">7 Powers + SWOT</button>
+  <button class="tab" onclick="showTab('market')">TAM + Key Players</button>
+  <button class="tab" onclick="showTab('financials')">Financials + Valuation</button>
+  <button class="tab" onclick="showTab('scenarios')">Scenarios / Bull–Base–Bear</button>
+</div>
+
+<div class="content">
+
+  <!-- ── OVERVIEW ── -->
+  <div class="panel active" id="panel-overview">
+    <div class="narrative-block">
+      <p>NVIDIA is the defining infrastructure company of the AI era. The 10x opportunity rests on one conviction: AI compute demand is structural, not cyclical — and NVIDIA's CUDA software moat makes its hardware non-substitutable for the next 5 years. Every foundation model lab, hyperscaler, and enterprise AI team runs on NVIDIA. That's the thesis.</p>
+    </div>
+
+    <div class="section-title">Key Opportunity Snapshot</div>
+    <div class="grid3" style="margin-bottom:24px">
+      <div class="card">
+        <div style="font-family:var(--font-m);font-size:9px;letter-spacing:1.4px;text-transform:uppercase;color:var(--accent);margin-bottom:8px">10X Driver</div>
+        <h3 style="font-size:14px">AI Infrastructure Monopoly</h3>
+        <p>NVDA controls ~70% of AI training GPU market. With Blackwell, data center revenue is projected to reach $109B in FY25 and $180B+ in FY26.</p>
+      </div>
+      <div class="card">
+        <div style="font-family:var(--font-m);font-size:9px;letter-spacing:1.4px;text-transform:uppercase;color:var(--accent);margin-bottom:8px">Moat</div>
+        <h3 style="font-size:14px">CUDA Ecosystem Lock-In</h3>
+        <p>3M+ developers, 15-year software lead. Switching from CUDA to AMD/Intel requires complete ML pipeline re-training — economically prohibitive.</p>
+      </div>
+      <div class="card">
+        <div style="font-family:var(--font-m);font-size:9px;letter-spacing:1.4px;text-transform:uppercase;color:var(--accent);margin-bottom:8px">Catalyst</div>
+        <h3 style="font-size:14px">Blackwell + NIM Platform</h3>
+        <p>Blackwell architecture delivers 30x inference performance vs. Hopper. NIM microservices create a recurring software revenue layer above hardware.</p>
+      </div>
+    </div>
+
+    <div class="section-title">Price / Upside Visualization</div>
+    <div class="card" style="margin-bottom:24px">
+      <div style="display:flex;gap:24px;align-items:center;flex-wrap:wrap;margin-bottom:16px">
+        <div>
+          <div style="font-size:11px;color:var(--muted);margin-bottom:2px">Current</div>
+          <div style="font-family:var(--font-m);font-size:18px;font-weight:600">$875</div>
+        </div>
+        <div style="flex:1;min-width:200px">
+          <div style="position:relative;height:12px;background:var(--s3);border-radius:6px;margin-bottom:6px">
+            <div style="position:absolute;left:0;top:0;height:100%;width:40%;background:linear-gradient(90deg,#ef4444,#f59e0b);border-radius:6px;opacity:0.7"></div>
+            <div style="position:absolute;left:40%;top:0;height:100%;width:30%;background:linear-gradient(90deg,#f59e0b,#22c55e);border-radius:0;opacity:0.7"></div>
+            <div style="position:absolute;left:70%;top:0;height:100%;width:30%;background:linear-gradient(90deg,#22c55e,#3cffd0);border-radius:0 6px 6px 0;opacity:0.7"></div>
+            <!-- Current price marker -->
+            <div style="position:absolute;left:37%;top:-4px;width:3px;height:20px;background:#fff;border-radius:1px"></div>
+          </div>
+          <div style="display:flex;justify-content:space-between;font-family:var(--font-m);font-size:9px;color:var(--muted)">
+            <span>$600 Bear</span><span>$875 Now</span><span>$1,400 Base</span><span>$2,200 Bull</span>
+          </div>
+        </div>
+        <div>
+          <div style="font-size:11px;color:var(--muted);margin-bottom:2px">Base Target</div>
+          <div style="font-family:var(--font-m);font-size:18px;font-weight:600;color:var(--accent)">$1,400</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="section-title">Core Narrative</div>
+    <div class="card">
+      <p style="color:var(--fg);font-size:14px;font-weight:300;line-height:1.8;margin-bottom:12px">
+        The AI compute market is following the same trajectory as cloud infrastructure — a once-in-a-generation buildout where the dominant infrastructure provider captures a disproportionate share of value. AWS took ~30% margin of every cloud dollar spent; NVIDIA is taking ~60% gross margin on every AI training dollar.
+      </p>
+      <p style="font-size:13px;color:var(--muted)">
+        <strong style="color:var(--fg)">Why 10x is achievable:</strong> If AI CapEx grows from $200B today to $600B+ by 2028, and NVDA sustains 65% market share at 75% gross margins, FY27 EPS could reach $55–65. At a 25–30x P/E (below historical multiple for hyper-growth), the stock would trade at $1,375–$1,950 — representing a 57–123% return from today. The 10x case requires AI becoming non-optional infrastructure across every Fortune 500, driving EPS above $80 by 2029.
+      </p>
+    </div>
+  </div>
+
+  <!-- ── FUNDAMENTALS ── -->
+  <div class="panel" id="panel-fundamentals">
+    <div class="section-title">Business Structure</div>
+    <div class="grid2" style="margin-bottom:24px">
+      <div class="card">
+        <h3>Revenue Segments</h3>
+        <div style="display:flex;flex-direction:column;gap:10px;margin-top:12px">
+          <div>
+            <div style="display:flex;justify-content:space-between;margin-bottom:4px">
+              <span style="font-size:12px">Data Center (AI GPU + NVLink)</span>
+              <span style="font-family:var(--font-m);font-size:12px;color:var(--accent)">85% · $109B FY25E</span>
+            </div>
+            <div style="height:6px;background:var(--s3);border-radius:3px"><div style="width:85%;height:100%;background:var(--accent);border-radius:3px"></div></div>
+          </div>
+          <div>
+            <div style="display:flex;justify-content:space-between;margin-bottom:4px">
+              <span style="font-size:12px">Gaming (GeForce RTX)</span>
+              <span style="font-family:var(--font-m);font-size:12px;color:var(--green)">10% · $13B FY25E</span>
+            </div>
+            <div style="height:6px;background:var(--s3);border-radius:3px"><div style="width:10%;height:100%;background:var(--green);border-radius:3px"></div></div>
+          </div>
+          <div>
+            <div style="display:flex;justify-content:space-between;margin-bottom:4px">
+              <span style="font-size:12px">Professional Viz + Automotive</span>
+              <span style="font-family:var(--font-m);font-size:12px;color:var(--amber)">5% · $6B FY25E</span>
+            </div>
+            <div style="height:6px;background:var(--s3);border-radius:3px"><div style="width:5%;height:100%;background:var(--amber);border-radius:3px"></div></div>
+          </div>
+        </div>
+      </div>
+      <div class="card">
+        <h3>Competitive Position</h3>
+        <p style="margin-bottom:10px"><strong>GPU Market Share (AI Training):</strong> NVIDIA ~70%, AMD ~18%, Intel ~5%, Custom ASICs ~7%</p>
+        <p style="margin-bottom:10px"><strong>CUDA Developers:</strong> 3M+ registered. cuDNN, cuBLAS, TensorRT are industry-standard libraries — no alternative stack.</p>
+        <p><strong>Key Customers:</strong> Microsoft (OpenAI infra), Meta, Google, Amazon, Oracle Cloud — all signed multi-year supply agreements for H100/H200/Blackwell GPUs.</p>
+      </div>
+    </div>
+
+    <div class="section-title">Business Model</div>
+    <div class="grid3" style="margin-bottom:24px">
+      <div class="card">
+        <div style="font-family:var(--font-m);font-size:9px;letter-spacing:1.4px;text-transform:uppercase;color:var(--accent);margin-bottom:8px">Hardware Revenue</div>
+        <p>GPU chips (H100, H200, Blackwell B200) + NVLink switching + DGX SuperPOD systems. ~75% gross margin. Constrained by TSMC CoWoS packaging capacity.</p>
+      </div>
+      <div class="card">
+        <div style="font-family:var(--font-m);font-size:9px;letter-spacing:1.4px;text-transform:uppercase;color:var(--accent);margin-bottom:8px">Software Layer (NIM)</div>
+        <p>NVIDIA NIM microservices — containerised AI models for inference. Software-as-a-service on top of hardware. Higher margin, recurring. Early-stage but growing.</p>
+      </div>
+      <div class="card">
+        <div style="font-family:var(--font-m);font-size:9px;letter-spacing:1.4px;text-transform:uppercase;color:var(--accent);margin-bottom:8px">Platform (CUDA + DGX Cloud)</div>
+        <p>DGX Cloud lets enterprises rent H100 clusters by the hour. CUDA remains the development standard for 90%+ of AI models in production.</p>
+      </div>
+    </div>
+
+    <div class="section-title">Key Risks</div>
+    <div class="card">
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+        <div><p><strong>Supply chain dependency:</strong> 100% reliant on TSMC 4nm/3nm. Any Taiwan geopolitical event is an existential supply risk.</p></div>
+        <div><p><strong>Customer internalization:</strong> Google (TPU), Amazon (Trainium), Microsoft (Maia) are building custom chips to reduce NVDA dependency.</p></div>
+        <div><p><strong>Valuation premium:</strong> Trading at 35x forward P/E — expensive if AI CapEx cycle moderates or EPS misses.</p></div>
+        <div><p><strong>China export restrictions:</strong> US BIS regulations limit H100/A800 exports. China was ~20–25% of data center revenue in FY23.</p></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── 7 POWERS + SWOT ── -->
+  <div class="panel" id="panel-thesis">
+    <div class="section-title">7 Powers Analysis (Hamilton Helmer)</div>
+    <div class="card" style="margin-bottom:24px">
+      <div class="power-row p1">
+        <span class="power-name">1. Scale Economies</span>
+        <span class="power-stars">★★★★★</span>
+        <span class="power-grade">Strong</span>
+        <span class="power-desc">R&D of $9B+ amortised over $128B revenue. Manufacturing scale drives unit cost advantages. Each generation builds on shared IP investment.</span>
+      </div>
+      <div class="power-row p2">
+        <span class="power-name">2. Network Economies</span>
+        <span class="power-stars">★★★★★</span>
+        <span class="power-grade">Strong</span>
+        <span class="power-desc">CUDA ecosystem has 3M+ developers. Every new CUDA-optimised model, library, and framework reinforces the network. Developers train on CUDA → companies need NVIDIA → more developers learn CUDA.</span>
+      </div>
+      <div class="power-row p3">
+        <span class="power-name">3. Counter-Positioning</span>
+        <span class="power-stars">★★★★☆</span>
+        <span class="power-grade">Strong</span>
+        <span class="power-desc">Jensen pivoted NVDA from gaming to AI compute in 2012–2016 when competitors dismissed GPU-for-AI. Incumbents (Intel) couldn't credibly respond without cannibalising CPU revenue.</span>
+      </div>
+      <div class="power-row p4">
+        <span class="power-name">4. Switching Costs</span>
+        <span class="power-stars">★★★★★</span>
+        <span class="power-grade">Very Strong</span>
+        <span class="power-desc">Complete re-write of ML pipelines required to move from CUDA to ROCm/OneAPI. Billions in sunk training compute. Model checkpoints are CUDA-native. Migration cost for a hyperscaler exceeds $10B+.</span>
+      </div>
+      <div class="power-row p5">
+        <span class="power-name">5. Branding</span>
+        <span class="power-stars">★★★★☆</span>
+        <span class="power-grade">Strong</span>
+        <span class="power-desc">"The AI company." Jensen Huang is a credibility signal — wearing a leather jacket at GTC now moves markets. NVDA = AI infrastructure in both retail and institutional mindshare.</span>
+      </div>
+      <div class="power-row p6">
+        <span class="power-name">6. Cornered Resource</span>
+        <span class="power-stars">★★★☆☆</span>
+        <span class="power-grade">Moderate</span>
+        <span class="power-desc">TSMC CoWoS advanced packaging is scarce; NVDA has priority allocation. Jensen's direct relationships at TSMC are structural. HBM3e memory allocation from SK Hynix prioritised to NVDA.</span>
+      </div>
+      <div class="power-row p7">
+        <span class="power-name">7. Process Power</span>
+        <span class="power-stars">★★★★☆</span>
+        <span class="power-grade">Strong</span>
+        <span class="power-desc">15-year CUDA software stack. cuDNN, TensorRT, NCCL are embedded in every AI framework (PyTorch, JAX, TensorFlow). Accumulated IP and accumulated tooling = compounding process advantage.</span>
+      </div>
+    </div>
+
+    <div class="section-title">SWOT Analysis</div>
+    <div class="swot-grid">
+      <div class="swot-q s">
+        <div class="swot-label">Strengths</div>
+        <ul>
+          <li>AI GPU monopoly — 70%+ training market share</li>
+          <li>CUDA software moat (15 years, 3M developers)</li>
+          <li>75%+ gross margins — exceptional unit economics</li>
+          <li>Jensen Huang as visionary founder-CEO</li>
+          <li>Full-stack approach: chip + software + cloud platform</li>
+        </ul>
+      </div>
+      <div class="swot-q w">
+        <div class="swot-label">Weaknesses</div>
+        <ul>
+          <li>100% TSMC dependency — single point of supply failure</li>
+          <li>Revenue concentration: 85% from Data Center</li>
+          <li>Valuation premium — priced for perfection (35x P/E)</li>
+          <li>No diversified chip design (CPU, networking)</li>
+          <li>Gaming segment structurally declining</li>
+        </ul>
+      </div>
+      <div class="swot-q o">
+        <div class="swot-label">Opportunities</div>
+        <ul>
+          <li>AI inference market — 10x larger than training long-term</li>
+          <li>Sovereign AI: 50+ countries building national GPU reserves</li>
+          <li>Physical AI / Robotics (Project GR00T, DRIVE Thor)</li>
+          <li>NIM software platform — recurring SaaS revenue layer</li>
+          <li>Agentic AI requires 100x more inference compute</li>
+        </ul>
+      </div>
+      <div class="swot-q t">
+        <div class="swot-label">Threats</div>
+        <ul>
+          <li>Hyperscaler in-house chips (TPU, Trainium, Maia)</li>
+          <li>AMD MI400 series narrowing performance gap</li>
+          <li>US export restrictions expanding to more chip classes</li>
+          <li>AI CapEx cycle correction / budget fatigue</li>
+          <li>Taiwan geopolitical risk to supply chain</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── TAM + KEY PLAYERS ── -->
+  <div class="panel" id="panel-market">
+    <div class="section-title">TAM Analysis</div>
+    <div class="grid2" style="margin-bottom:24px">
+      <div class="card">
+        <h3 style="margin-bottom:4px">AI Infrastructure TAM</h3>
+        <p style="margin-bottom:14px">Total addressable market for AI compute (training + inference hardware + software):</p>
+        <div class="tam-chart-wrap">
+          <svg viewBox="0 0 480 170" style="width:100%;height:auto;display:block" aria-label="AI Infrastructure TAM 2023–2030">
+            <defs>
+              <linearGradient id="tam-hist-g" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="0%" stop-color="#3cffd0" stop-opacity="0.10"/>
+                <stop offset="100%" stop-color="#3cffd0" stop-opacity="0"/>
+              </linearGradient>
+              <linearGradient id="tam-fore-g" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="0%" stop-color="#3cffd0" stop-opacity="0.25"/>
+                <stop offset="100%" stop-color="#3cffd0" stop-opacity="0"/>
+              </linearGradient>
+            </defs>
+            <!-- Axes -->
+            <line x1="50" y1="15" x2="50" y2="130" stroke="#2a2a2a" stroke-width="1"/>
+            <line x1="50" y1="130" x2="465" y2="130" stroke="#2a2a2a" stroke-width="1"/>
+            <!-- Horizontal grid -->
+            <line x1="50" y1="15" x2="465" y2="15" stroke="#1e1e1e" stroke-width="1" stroke-dasharray="3,3"/>
+            <line x1="50" y1="56" x2="465" y2="56" stroke="#1e1e1e" stroke-width="1" stroke-dasharray="3,3"/>
+            <line x1="50" y1="93" x2="465" y2="93" stroke="#1e1e1e" stroke-width="1" stroke-dasharray="3,3"/>
+            <!-- Y labels -->
+            <text x="44" y="19" fill="#5a5a5a" font-size="8" text-anchor="end" font-family="JetBrains Mono,monospace">$1.4T</text>
+            <text x="44" y="60" fill="#5a5a5a" font-size="8" text-anchor="end" font-family="JetBrains Mono,monospace">$900B</text>
+            <text x="44" y="97" fill="#5a5a5a" font-size="8" text-anchor="end" font-family="JetBrains Mono,monospace">$450B</text>
+            <text x="44" y="133" fill="#5a5a5a" font-size="8" text-anchor="end" font-family="JetBrains Mono,monospace">$0</text>
+            <!-- BASE 2026 vertical rule -->
+            <line x1="226" y1="12" x2="226" y2="130" stroke="#3cffd0" stroke-width="1" stroke-dasharray="3,3" opacity="0.35"/>
+            <text x="226" y="9" fill="#3cffd0" font-size="7" text-anchor="middle" font-family="JetBrains Mono,monospace" letter-spacing="0.5">BASE</text>
+            <!-- Historical area fill (2023–2026) -->
+            <path d="M50,123 L109,114 L167,104 L226,93 L226,130 L50,130 Z" fill="url(#tam-hist-g)"/>
+            <!-- Forecast area fill (2026–2030) -->
+            <path d="M226,93 L284,79 L343,64 L401,40 L465,15 L465,130 L226,130 Z" fill="url(#tam-fore-g)"/>
+            <!-- Historical line (solid grey) -->
+            <polyline points="50,123 109,114 167,104 226,93" fill="none" stroke="#555" stroke-width="1.5" stroke-linejoin="round"/>
+            <!-- Forecast line (dashed mint) -->
+            <polyline points="226,93 284,79 343,64 401,40 465,15" fill="none" stroke="#3cffd0" stroke-width="1.5" stroke-dasharray="4,3" stroke-linejoin="round"/>
+            <!-- Historical dots -->
+            <circle cx="50" cy="123" r="3" fill="#555" stroke="#131313" stroke-width="1"/>
+            <circle cx="109" cy="114" r="3" fill="#555" stroke="#131313" stroke-width="1"/>
+            <circle cx="167" cy="104" r="3" fill="#777" stroke="#131313" stroke-width="1"/>
+            <!-- BASE dot -->
+            <circle cx="226" cy="93" r="4.5" fill="#3cffd0" stroke="#131313" stroke-width="1.5"/>
+            <!-- Forecast dots -->
+            <circle cx="284" cy="79" r="3" fill="#3cffd0" stroke="#131313" stroke-width="1" opacity="0.6"/>
+            <circle cx="343" cy="64" r="3" fill="#3cffd0" stroke="#131313" stroke-width="1" opacity="0.6"/>
+            <circle cx="401" cy="40" r="3" fill="#3cffd0" stroke="#131313" stroke-width="1" opacity="0.6"/>
+            <circle cx="465" cy="15" r="4.5" fill="#3cffd0" stroke="#131313" stroke-width="1.5"/>
+            <!-- Value callouts -->
+            <text x="50" y="118" fill="#5a5a5a" font-size="7.5" text-anchor="middle" font-family="JetBrains Mono,monospace">$90B</text>
+            <text x="109" y="109" fill="#5a5a5a" font-size="7.5" text-anchor="middle" font-family="JetBrains Mono,monospace">$200B</text>
+            <text x="167" y="99" fill="#777" font-size="7.5" text-anchor="middle" font-family="JetBrains Mono,monospace">$320B</text>
+            <text x="226" y="88" fill="#3cffd0" font-size="8" text-anchor="middle" font-family="JetBrains Mono,monospace">$450B</text>
+            <text x="343" y="59" fill="#3cffd0" font-size="7.5" text-anchor="middle" font-family="JetBrains Mono,monospace">$800B</text>
+            <text x="465" y="10" fill="#3cffd0" font-size="8" text-anchor="end" font-family="JetBrains Mono,monospace">$1.4T</text>
+            <!-- X axis year labels -->
+            <text x="50" y="145" fill="#5a5a5a" font-size="7.5" text-anchor="middle" font-family="JetBrains Mono,monospace">2023A</text>
+            <text x="109" y="145" fill="#5a5a5a" font-size="7.5" text-anchor="middle" font-family="JetBrains Mono,monospace">2024A</text>
+            <text x="167" y="145" fill="#5a5a5a" font-size="7.5" text-anchor="middle" font-family="JetBrains Mono,monospace">2025E</text>
+            <text x="226" y="145" fill="#3cffd0" font-size="7.5" text-anchor="middle" font-family="JetBrains Mono,monospace">2026E</text>
+            <text x="284" y="145" fill="#5a5a5a" font-size="7.5" text-anchor="middle" font-family="JetBrains Mono,monospace">2027E</text>
+            <text x="343" y="145" fill="#5a5a5a" font-size="7.5" text-anchor="middle" font-family="JetBrains Mono,monospace">2028E</text>
+            <text x="401" y="145" fill="#5a5a5a" font-size="7.5" text-anchor="middle" font-family="JetBrains Mono,monospace">2029E</text>
+            <text x="465" y="145" fill="#3cffd0" font-size="7.5" text-anchor="middle" font-family="JetBrains Mono,monospace">2030E</text>
+            <!-- Legend -->
+            <line x1="50" y1="159" x2="66" y2="159" stroke="#555" stroke-width="1.5"/>
+            <text x="70" y="162" fill="#5a5a5a" font-size="7.5" font-family="JetBrains Mono,monospace">Historical</text>
+            <line x1="130" y1="159" x2="146" y2="159" stroke="#3cffd0" stroke-width="1.5" stroke-dasharray="4,3"/>
+            <text x="150" y="162" fill="#5a5a5a" font-size="7.5" font-family="JetBrains Mono,monospace">Forecast</text>
+            <circle cx="210" cy="159" r="3" fill="#3cffd0"/>
+            <text x="215" y="162" fill="#3cffd0" font-size="7.5" font-family="JetBrains Mono,monospace">Base 2026</text>
+          </svg>
+        </div>
+        <p style="margin-top:12px;font-size:11px"><strong style="color:var(--accent)">38% CAGR 2023–2030.</strong> If NVDA captures 65% share, that's $910B TAM by 2030.</p>
+      </div>
+      <div class="card">
+        <h3 style="margin-bottom:12px">Market Share Breakdown</h3>
+        <div style="display:flex;flex-direction:column;gap:10px">
+          <div>
+            <div style="display:flex;justify-content:space-between;margin-bottom:3px"><span style="font-size:12px">NVIDIA (H100/Blackwell)</span><span style="font-family:var(--font-m);font-size:11px;color:var(--accent)">~70%</span></div>
+            <div style="height:5px;background:var(--s3);border-radius:3px"><div style="width:70%;height:100%;background:var(--accent);border-radius:3px"></div></div>
+          </div>
+          <div>
+            <div style="display:flex;justify-content:space-between;margin-bottom:3px"><span style="font-size:12px">AMD (MI300X / MI400)</span><span style="font-family:var(--font-m);font-size:11px;color:var(--muted)">~18%</span></div>
+            <div style="height:5px;background:var(--s3);border-radius:3px"><div style="width:18%;height:100%;background:#666;border-radius:3px"></div></div>
+          </div>
+          <div>
+            <div style="display:flex;justify-content:space-between;margin-bottom:3px"><span style="font-size:12px">Custom ASICs (TPU, Trainium)</span><span style="font-family:var(--font-m);font-size:11px;color:var(--muted)">~7%</span></div>
+            <div style="height:5px;background:var(--s3);border-radius:3px"><div style="width:7%;height:100%;background:#555;border-radius:3px"></div></div>
+          </div>
+          <div>
+            <div style="display:flex;justify-content:space-between;margin-bottom:3px"><span style="font-size:12px">Intel Gaudi / others</span><span style="font-family:var(--font-m);font-size:11px;color:var(--muted)">~5%</span></div>
+            <div style="height:5px;background:var(--s3);border-radius:3px"><div style="width:5%;height:100%;background:#444;border-radius:3px"></div></div>
+          </div>
+        </div>
+        <p style="margin-top:14px;font-size:11px">NVDA Addressable (65%): <strong style="color:var(--accent)">$182B by 2026E · $910B by 2030E</strong></p>
+      </div>
+    </div>
+
+    <div class="section-title">Key Players — Management & Board</div>
+    <div class="grid3" style="margin-bottom:24px">
+      <div class="player-card">
+        <div class="player-name">Jensen Huang</div>
+        <div class="player-role">CEO & Co-Founder · 3.5% Equity</div>
+        <div class="player-note">Co-founded NVIDIA in 1993. Led the pivot from gaming GPU to AI infrastructure. Visionary roadmap execution — every product cycle delivered ahead of competition. Known for leather jacket and GTC keynotes that move markets. Owns $75B+ in NVDA shares.</div>
+      </div>
+      <div class="player-card">
+        <div class="player-name">Colette Kress</div>
+        <div class="player-role">EVP & CFO · Joined 2013</div>
+        <div class="player-note">Former CFO at Cisco and Microsoft. Disciplined capital allocation — returned $25B+ via buybacks. Manages $80B+ cash position. Conservative guidance philosophy: historically guides low, beats high. Key relationship with institutional investors.</div>
+      </div>
+      <div class="player-card">
+        <div class="player-name">Chris Malachowsky</div>
+        <div class="player-role">Co-Founder · VP Hardware Research</div>
+        <div class="player-note">Co-founder (with Jensen and Curtis Priem). Leads hardware architecture research including NVLink interconnect and DGX SuperPOD systems. Inventor on 100+ patents. Critical to NVDA's architectural moat.</div>
+      </div>
+      <div class="player-card">
+        <div class="player-name">Tench Coxe</div>
+        <div class="player-role">Board Director · Audit Committee Chair</div>
+        <div class="player-note">Managing Director, Sutter Hill Ventures. Original NVDA investor since 1993. Deep institutional knowledge of company history and capital strategy. Longest-serving independent director.</div>
+      </div>
+      <div class="player-card">
+        <div class="player-name">Mark Stevens</div>
+        <div class="player-role">Board Director</div>
+        <div class="player-note">Managing Partner, S-Cubed Capital. Previously at Sequoia Capital. Former NVDA board observer from founding era. Provides perspective on semiconductor industry cycles and venture ecosystem.</div>
+      </div>
+      <div class="player-card">
+        <div class="player-name">Aarti Shah</div>
+        <div class="player-role">Board Director · Compensation Chair</div>
+        <div class="player-note">SVP & CIO at Eli Lilly. Brings enterprise technology and AI deployment perspective as a major NVDA customer segment. Ensures executive compensation aligned with AI business KPIs.</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── FINANCIALS + VALUATION ── -->
+  <div class="panel" id="panel-financials">
+    <div class="section-title">Financial Projections</div>
+    <div class="card" style="margin-bottom:24px;overflow-x:auto">
+      <table class="fin-table">
+        <thead>
+          <tr>
+            <th>Metric</th>
+            <th>FY24A</th>
+            <th class="est">FY25E</th>
+            <th class="est">FY26E</th>
+            <th class="est">FY27E</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr class="highlight">
+            <td>Revenue</td>
+            <td>$60.9B</td>
+            <td class="est">$128.0B</td>
+            <td class="est">$181.5B</td>
+            <td class="est">$240.0B</td>
+          </tr>
+          <tr>
+            <td>YoY Growth</td>
+            <td>+122%</td>
+            <td class="est">+110%</td>
+            <td class="est">+42%</td>
+            <td class="est">+32%</td>
+          </tr>
+          <tr>
+            <td>Gross Profit</td>
+            <td>$44.3B</td>
+            <td class="est">$96.0B</td>
+            <td class="est">$138.0B</td>
+            <td class="est">$183.6B</td>
+          </tr>
+          <tr>
+            <td>Gross Margin</td>
+            <td>72.7%</td>
+            <td class="est">75.0%</td>
+            <td class="est">76.0%</td>
+            <td class="est">76.5%</td>
+          </tr>
+          <tr>
+            <td>Operating Income</td>
+            <td>$33.0B</td>
+            <td class="est">$77.0B</td>
+            <td class="est">$114.0B</td>
+            <td class="est">$154.0B</td>
+          </tr>
+          <tr>
+            <td>Operating Margin</td>
+            <td>54.2%</td>
+            <td class="est">60.2%</td>
+            <td class="est">62.8%</td>
+            <td class="est">64.2%</td>
+          </tr>
+          <tr class="highlight">
+            <td>Net Income</td>
+            <td>$29.8B</td>
+            <td class="est">$68.0B</td>
+            <td class="est">$101.0B</td>
+            <td class="est">$132.0B</td>
+          </tr>
+          <tr class="highlight">
+            <td>Diluted EPS</td>
+            <td>$11.93</td>
+            <td class="est">$27.60</td>
+            <td class="est">$41.00</td>
+            <td class="est">$54.00</td>
+          </tr>
+          <tr>
+            <td>Free Cash Flow</td>
+            <td>$27.0B</td>
+            <td class="est">$60.0B</td>
+            <td class="est">$90.0B</td>
+            <td class="est">$118.0B</td>
+          </tr>
+        </tbody>
+      </table>
+      <p style="margin-top:10px;font-size:11px;color:var(--muted)">E = Consensus estimate. FY ends January. Source: Bloomberg consensus, internal model.</p>
+    </div>
+
+    <div class="section-title">Valuation Methods</div>
+    <div class="card" style="margin-bottom:20px">
+      <div class="val-row">
+        <span class="val-method">P/E Multiple (35x FY26E)</span>
+        <span class="val-price">$1,435</span>
+        <span class="val-note">35x forward P/E on FY26E EPS of $41. Premium justified by 42% revenue growth and network effect moat. Historical median P/E was 55x in 2023.</span>
+      </div>
+      <div class="val-row">
+        <span class="val-method">EV/Revenue (18x FY26E)</span>
+        <span class="val-price">$1,350</span>
+        <span class="val-note">18x FY26E revenue of $181.5B. Comparable to SaaS companies with moats — reflects software-like economics of CUDA platform.</span>
+      </div>
+      <div class="val-row">
+        <span class="val-method">DCF (15% WACC, 3% terminal)</span>
+        <span class="val-price">$1,620</span>
+        <span class="val-note">10-year explicit FCF forecast. Terminal growth at 3%. WACC reflects AI hardware risk premium. Sensitive to FCF margin assumptions in FY27–29.</span>
+      </div>
+      <div class="val-row">
+        <span class="val-method">EV/EBITDA (28x FY26E)</span>
+        <span class="val-price">$1,480</span>
+        <span class="val-note">28x FY26E EBITDA of ~$120B. Aligned with mega-cap tech with durable moats. Below historical average of 35–40x for NVDA.</span>
+      </div>
+      <div class="val-row">
+        <span class="val-method">Analyst Consensus</span>
+        <span class="val-price">$1,247</span>
+        <span class="val-note">Average of 61 sell-side price targets. Range: $750 (bear) to $2,200 (bull). Median: $1,220. Most conservative targets use P/E compression scenarios.</span>
+      </div>
+    </div>
+
+    <div class="section-title">Analyst Distribution</div>
+    <div class="analyst-dist">
+      <div class="ad-seg">
+        <div class="ad-num">48</div>
+        <div class="ad-lbl">Buy / Strong Buy</div>
+      </div>
+      <div class="ad-seg">
+        <div class="ad-num">11</div>
+        <div class="ad-lbl">Hold / Neutral</div>
+      </div>
+      <div class="ad-seg">
+        <div class="ad-num">2</div>
+        <div class="ad-lbl">Sell / Underperform</div>
+      </div>
+      <div class="ad-seg" style="border:none">
+        <div class="ad-num" style="color:var(--fg)">$750–$2,200</div>
+        <div class="ad-lbl">Price Target Range</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── SCENARIOS ── -->
+  <div class="panel" id="panel-scenarios">
+    <div class="section-title">Scenario Analysis</div>
+    <div class="scenario-cards">
+      <div class="sc-card bull">
+        <div class="sc-head">🐂 Bull Case</div>
+        <div class="sc-price">$2,200</div>
+        <div class="sc-return">+151% from current</div>
+        <div class="sc-divider"></div>
+        <div class="sc-assumptions">
+          <ul>
+            <li>AI CapEx reaches $600B+ by 2027; NVDA captures 72% share</li>
+            <li>Blackwell demand exceeds supply for 3+ more years</li>
+            <li>NIM software platform generates $10B+ recurring revenue</li>
+            <li>Physical AI (robotics) becomes a $5B segment by FY27</li>
+            <li>EPS reaches $65–80 by FY27; multiple holds at 28–30x</li>
+            <li>No major AMD market share gain; CUDA moat holds</li>
+          </ul>
+        </div>
+        <span class="sc-prob">35% Probability</span>
+      </div>
+      <div class="sc-card base">
+        <div class="sc-head">📊 Base Case</div>
+        <div class="sc-price">$1,400</div>
+        <div class="sc-return">+60% from current</div>
+        <div class="sc-divider"></div>
+        <div class="sc-assumptions">
+          <ul>
+            <li>AI CapEx cycle continues but moderates post-2025</li>
+            <li>NVDA maintains 65–70% GPU share; AMD gains modestly</li>
+            <li>Hyperscaler custom chips take 5–8% from NVDA over 2 years</li>
+            <li>China restrictions persist but NVDA sells H20 at scale</li>
+            <li>EPS reaches $45–55 by FY27; multiple contracts to 25–28x</li>
+            <li>Gross margins hold at 74–76% range</li>
+          </ul>
+        </div>
+        <span class="sc-prob">43% Probability</span>
+      </div>
+      <div class="sc-card bear">
+        <div class="sc-head">🐻 Bear Case</div>
+        <div class="sc-price">$600</div>
+        <div class="sc-return">−31% from current</div>
+        <div class="sc-divider"></div>
+        <div class="sc-assumptions">
+          <ul>
+            <li>AI hype cycle correction; enterprise CapEx pullback in 2025</li>
+            <li>AMD MI400 series achieves performance parity by mid-2026</li>
+            <li>Hyperscalers accelerate in-house chips — NVDA loses 15%+ share</li>
+            <li>BIS expands China restrictions to all NVDA data center chips</li>
+            <li>EPS misses at $25–35 by FY27; multiple compresses to 18–20x</li>
+            <li>Supply chain disruption from Taiwan geopolitical event</li>
+          </ul>
+        </div>
+        <span class="sc-prob">22% Probability</span>
+      </div>
+    </div>
+
+    <div style="margin-top:24px">
+      <div class="section-title">Expected Value</div>
+      <div class="card">
+        <div style="display:flex;gap:24px;flex-wrap:wrap;align-items:center">
+          <div>
+            <div style="font-family:var(--font-m);font-size:9px;letter-spacing:1.4px;text-transform:uppercase;color:var(--muted);margin-bottom:4px">Probability-Weighted Target</div>
+            <div style="font-family:var(--font-d);font-size:36px;color:var(--accent);line-height:1">$1,420</div>
+            <div style="font-size:12px;color:var(--green);margin-top:4px">+62.2% Expected Return</div>
+          </div>
+          <div style="flex:1;min-width:200px">
+            <p style="font-size:12px;line-height:1.7">
+              <strong>Calculation:</strong> ($2,200 × 0.35) + ($1,400 × 0.43) + ($600 × 0.22) = $770 + $602 + $132 = <strong style="color:var(--accent)">$1,504 weighted average.</strong> Adjusted for time value over 18M = $1,420 present value equivalent.
+            </p>
+            <p style="font-size:12px;color:var(--muted);margin-top:8px">
+              Risk/reward is asymmetric: Bull upside (+151%) outweighs Bear downside (−31%) on a 35:22 probability ratio. The thesis holds as long as CUDA moat and AI CapEx cycle remain intact.
+            </p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div><!-- /content -->
+
+<script>
+  function showTab(id) {
+    document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+    document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+    event.currentTarget.classList.add('active');
+    document.getElementById('panel-' + id).classList.add('active');
+  }
+</script>
+</body>
+</html>

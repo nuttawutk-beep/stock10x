@@ -1,0 +1,600 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Stock10x — My Watchlist</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Anton&family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #131313;
+      --surface: #1c1c1c;
+      --s2: #252525;
+      --fg: #ffffff;
+      --muted: #949494;
+      --border: #2a2a2a;
+      --accent: #3cffd0;
+      --uv: #5200ff;
+      --hover: #3860be;
+      --green: #22c55e;
+      --amber: #f59e0b;
+      --red: #ef4444;
+      --font-d: 'Anton', Impact, Helvetica, sans-serif;
+      --font-b: 'Inter', -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
+      --font-m: 'JetBrains Mono', ui-monospace, Menlo, monospace;
+    }
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      background: var(--bg); color: var(--fg);
+      font-family: var(--font-b); -webkit-font-smoothing: antialiased;
+      min-height: 100vh;
+    }
+
+    /* NAV */
+    nav {
+      position: sticky; top: 0; z-index: 100;
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 0 40px; height: 60px;
+      background: rgba(19,19,19,0.96);
+      backdrop-filter: blur(14px);
+      border-bottom: 1px solid var(--border);
+    }
+    .nav-logo {
+      font-family: var(--font-d); font-size: 18px; letter-spacing: 0.05em;
+      color: var(--fg); text-decoration: none;
+    }
+    .nav-logo span { color: var(--accent); }
+    .nav-links { display: flex; gap: 24px; list-style: none; }
+    .nav-links a {
+      font-family: var(--font-m); font-size: 10px; font-weight: 600;
+      letter-spacing: 1.5px; text-transform: uppercase;
+      color: var(--muted); text-decoration: none; transition: color 150ms;
+    }
+    .nav-links a:hover { color: var(--hover); }
+    .nav-links .active { color: var(--fg); border-bottom: 1px solid var(--accent); padding-bottom: 1px; }
+    .btn-nav {
+      background: var(--accent); color: #000;
+      font-family: var(--font-m); font-size: 10px; font-weight: 600;
+      letter-spacing: 1.5px; text-transform: uppercase;
+      text-decoration: none; padding: 7px 16px; border-radius: 24px;
+      transition: all 180ms; border: none; cursor: pointer;
+    }
+    .btn-nav:hover { background: rgba(255,255,255,0.15); color: #fff; }
+
+    /* PAGE */
+    main { max-width: 1360px; margin: 0 auto; padding: 36px 40px 80px; }
+
+    /* HEADER */
+    .page-header {
+      display: flex; align-items: flex-end; justify-content: space-between;
+      margin-bottom: 28px; flex-wrap: wrap; gap: 16px;
+    }
+    .page-header h2 {
+      font-family: var(--font-d); font-size: 34px;
+      letter-spacing: 0.04em; line-height: 1;
+    }
+    .page-header h2 small {
+      display: block; font-family: var(--font-m);
+      font-size: 10px; font-weight: 500; letter-spacing: 1.5px;
+      text-transform: uppercase; color: var(--muted); margin-bottom: 6px;
+    }
+    .header-actions { display: flex; gap: 10px; align-items: center; }
+
+    /* FILTER BAR */
+    .filters {
+      display: flex; gap: 8px; margin-bottom: 20px; flex-wrap: wrap;
+      align-items: center;
+    }
+    .filter-label {
+      font-family: var(--font-m); font-size: 9px; font-weight: 600;
+      letter-spacing: 1.5px; text-transform: uppercase; color: var(--muted);
+      margin-right: 4px;
+    }
+    .fpill {
+      font-family: var(--font-m); font-size: 9.5px; font-weight: 600;
+      letter-spacing: 1.2px; text-transform: uppercase;
+      padding: 5px 12px; border-radius: 20px; border: 1px solid var(--border);
+      color: var(--muted); background: transparent; cursor: pointer;
+      transition: all 150ms;
+    }
+    .fpill:hover { color: var(--fg); border-color: #555; }
+    .fpill.on { background: var(--accent); color: #000; border-color: var(--accent); }
+
+    /* SUMMARY STATS */
+    .summary-stats {
+      display: flex; gap: 0; margin-bottom: 24px;
+      border: 1px solid var(--border); border-radius: 14px; overflow: hidden;
+    }
+    .stat {
+      flex: 1; padding: 16px 20px;
+      border-right: 1px solid var(--border);
+    }
+    .stat:last-child { border-right: none; }
+    .stat-val {
+      font-family: var(--font-d); font-size: 24px;
+      color: var(--fg); line-height: 1;
+    }
+    .stat-val.green { color: var(--green); }
+    .stat-val.accent { color: var(--accent); }
+    .stat-lbl {
+      font-family: var(--font-m); font-size: 9px; font-weight: 500;
+      letter-spacing: 1.4px; text-transform: uppercase;
+      color: var(--muted); margin-top: 4px;
+    }
+    .stat-sub { font-size: 11px; color: var(--muted); opacity: 0.6; margin-top: 1px; }
+
+    /* TABLE HEADER */
+    .tbl-head {
+      display: grid;
+      grid-template-columns: 36px 145px 105px 118px 120px 58px 68px 64px 55px 90px 86px 88px;
+      gap: 0 10px;
+      padding: 10px 16px;
+      border-bottom: 1px solid var(--border);
+      font-family: var(--font-m); font-size: 9px; font-weight: 600;
+      letter-spacing: 1.4px; text-transform: uppercase; color: var(--muted);
+    }
+
+    /* STOCK ROW */
+    .stock-row {
+      display: grid;
+      grid-template-columns: 36px 145px 105px 118px 120px 58px 68px 64px 55px 90px 86px 88px;
+      gap: 0 10px;
+      padding: 14px 16px;
+      border-bottom: 1px solid var(--border);
+      align-items: center;
+      transition: background 150ms;
+      cursor: pointer;
+    }
+    .stock-row:hover { background: rgba(255,255,255,0.025); }
+    .stock-row:hover .ticker { color: var(--hover); }
+
+    .rank {
+      font-family: var(--font-m); font-size: 11px;
+      color: var(--muted); text-align: center;
+    }
+    .ticker-block { display: flex; flex-direction: column; gap: 2px; }
+    .ticker {
+      font-family: var(--font-m); font-size: 13px; font-weight: 600;
+      color: var(--accent); letter-spacing: 0.5px; transition: color 150ms;
+    }
+    .co-name { font-size: 11px; color: var(--muted); }
+
+    .sector-pill {
+      display: inline-block;
+      font-family: var(--font-m); font-size: 8.5px; font-weight: 600;
+      letter-spacing: 1px; text-transform: uppercase;
+      padding: 3px 8px; border-radius: 10px;
+      background: var(--s2); color: var(--muted);
+      border: 1px solid var(--border); white-space: nowrap;
+    }
+
+    /* SPARKLINE */
+    .spark { display: flex; align-items: center; }
+    .spark svg { display: block; }
+
+    .price-col { font-size: 13px; font-weight: 600; color: var(--fg); line-height: 1.2; }
+    .price-col small {
+      display: block; font-family: var(--font-m); font-size: 8.5px;
+      color: var(--muted); margin-top: 2px; letter-spacing: 0.4px;
+    }
+
+    .ytd-col {
+      font-family: var(--font-m); font-size: 12px; font-weight: 600;
+      letter-spacing: 0.3px;
+    }
+    .ytd-col.pos { color: var(--green); }
+    .ytd-col.neg { color: var(--red); }
+
+    .opp5y-col {
+      font-family: var(--font-m); font-size: 12px; font-weight: 600;
+      color: var(--accent); letter-spacing: 0.3px;
+    }
+
+    .analyst-pill {
+      display: inline-block;
+      font-family: var(--font-m); font-size: 8px; font-weight: 700;
+      letter-spacing: 1px; text-transform: uppercase;
+      padding: 4px 8px; border-radius: 10px; white-space: nowrap;
+    }
+    .analyst-pill.strong-buy { background: rgba(60,255,208,0.15); color: var(--accent); border: 1px solid rgba(60,255,208,0.3); }
+    .analyst-pill.buy       { background: rgba(34,197,94,0.15);  color: var(--green);  border: 1px solid rgba(34,197,94,0.3); }
+    .analyst-pill.hold      { background: rgba(245,158,11,0.15); color: var(--amber);  border: 1px solid rgba(245,158,11,0.3); }
+    .analyst-pill.sell      { background: rgba(239,68,68,0.15);  color: var(--red);    border: 1px solid rgba(239,68,68,0.3); }
+
+    .upside {
+      font-family: var(--font-m); font-size: 12px; font-weight: 600;
+      letter-spacing: 0.3px;
+    }
+    .upside.high { color: var(--accent); }
+    .upside.mid  { color: var(--green); }
+    .upside.low  { color: var(--amber); }
+
+    .horizon {
+      font-family: var(--font-m); font-size: 11px;
+      color: var(--muted);
+    }
+
+    /* PROBABILITY */
+    .prob-wrap { display: flex; flex-direction: column; gap: 4px; }
+    .prob-bar {
+      height: 4px; border-radius: 2px; background: var(--border);
+      overflow: hidden;
+    }
+    .prob-fill { height: 100%; border-radius: 2px; }
+    .prob-num {
+      font-family: var(--font-m); font-size: 10px; font-weight: 600;
+      letter-spacing: 0.5px;
+    }
+    .prob-lbl { font-size: 10px; color: var(--muted); }
+
+    .view-btn {
+      font-family: var(--font-m); font-size: 9px; font-weight: 600;
+      letter-spacing: 1.3px; text-transform: uppercase;
+      padding: 6px 12px; border-radius: 20px;
+      border: 1px solid var(--border); background: transparent;
+      color: var(--muted); cursor: pointer; text-decoration: none;
+      display: inline-block; transition: all 150ms; white-space: nowrap;
+    }
+    .view-btn:hover { border-color: var(--accent); color: var(--accent); }
+
+    /* ADD STOCK */
+    .add-row {
+      display: flex; align-items: center; justify-content: center;
+      padding: 20px; border: 1px dashed var(--border); border-radius: 12px;
+      margin-top: 16px; gap: 10px; cursor: pointer; transition: all 150ms;
+    }
+    .add-row:hover { border-color: var(--accent); }
+    .add-row:hover .add-lbl { color: var(--accent); }
+    .add-icon {
+      width: 28px; height: 28px; border-radius: 50%;
+      background: var(--s2); border: 1px solid var(--border);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 18px; color: var(--muted); line-height: 1;
+    }
+    .add-row:hover .add-icon { border-color: var(--accent); color: var(--accent); }
+    .add-lbl {
+      font-family: var(--font-m); font-size: 10px; font-weight: 600;
+      letter-spacing: 1.4px; text-transform: uppercase; color: var(--muted);
+      transition: color 150ms;
+    }
+
+    /* Responsive */
+    @media (max-width: 1300px) {
+      .tbl-head, .stock-row {
+        grid-template-columns: 36px 135px 95px 110px 110px 52px 62px 58px 50px 84px 80px 82px;
+        gap: 0 8px;
+      }
+    }
+    @media (max-width: 900px) {
+      main { padding: 24px 16px 60px; }
+      nav { padding: 0 16px; }
+      .nav-links { display: none; }
+      .tbl-head { display: none; }
+      .summary-stats { display: none; }
+      .stock-row {
+        grid-template-columns: 36px 1fr auto;
+        grid-template-rows: auto auto;
+        gap: 6px 12px;
+        padding: 14px 12px;
+      }
+      .rank { grid-row: 1/3; }
+      .ticker-block { grid-column: 2; }
+      .sector-pill, .ytd-col, .opp5y-col, .analyst-pill, .horizon { display: none; }
+      .spark { grid-column: 2; grid-row: 2; }
+      .price-col { display: none; }
+      .upside { grid-column: 3; grid-row: 1; font-size: 14px; }
+      .prob-wrap { grid-column: 3; grid-row: 2; align-items: flex-end; }
+      .view-btn { display: none; }
+    }
+  </style>
+</head>
+<body>
+
+<nav>
+  <a href="index.html" class="nav-logo">STOCK<span>10X</span></a>
+  <ul class="nav-links">
+    <li><a href="landing.html">Home</a></li>
+    <li><a href="dashboard.html" class="active">Dashboard</a></li>
+    <li><a href="thesis.html">Thesis Builder</a></li>
+  </ul>
+  <a href="thesis.html" class="btn-nav">+ Add Stock</a>
+</nav>
+
+<main>
+  <div class="page-header">
+    <h2>
+      <small>My Watchlist</small>
+      10x Candidates
+    </h2>
+    <div class="header-actions">
+      <div class="filters" style="margin:0">
+        <span class="filter-label">Filter</span>
+        <button class="fpill on" onclick="setFilter(this,'all')">All</button>
+        <button class="fpill" onclick="setFilter(this,'ai')">AI / Semis</button>
+        <button class="fpill" onclick="setFilter(this,'cloud')">Cloud</button>
+        <button class="fpill" onclick="setFilter(this,'ev')">EV / Mobility</button>
+        <button class="fpill" onclick="setFilter(this,'social')">Social</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Summary stats -->
+  <div class="summary-stats">
+    <div class="stat">
+      <div class="stat-val accent">6</div>
+      <div class="stat-lbl">Positions Tracked</div>
+    </div>
+    <div class="stat">
+      <div class="stat-val green">+58.9%</div>
+      <div class="stat-lbl">Avg Upside</div>
+    </div>
+    <div class="stat">
+      <div class="stat-val">72%</div>
+      <div class="stat-lbl">Avg Bull Probability</div>
+    </div>
+    <div class="stat">
+      <div class="stat-val">2028</div>
+      <div class="stat-lbl">Avg Target Year</div>
+    </div>
+    <div class="stat">
+      <div class="stat-val accent">2</div>
+      <div class="stat-lbl">100%+ Upside</div>
+    </div>
+  </div>
+
+  <!-- Table header -->
+  <div class="tbl-head">
+    <span>#</span>
+    <span>Stock</span>
+    <span>Sector</span>
+    <span>1M Price</span>
+    <span>Price / MCap</span>
+    <span>YTD</span>
+    <span>→2030</span>
+    <span>Upside</span>
+    <span>Target</span>
+    <span>Analyst</span>
+    <span>Probability</span>
+    <span></span>
+  </div>
+
+  <!-- NVDA -->
+  <div class="stock-row" data-sector="ai">
+    <span class="rank">1</span>
+    <div class="ticker-block">
+      <span class="ticker">NVDA</span>
+      <span class="co-name">NVIDIA Corporation</span>
+    </div>
+    <span class="sector-pill">AI · Semis</span>
+    <div class="spark">
+      <svg viewBox="0 0 140 40" width="140" height="40" xmlns="http://www.w3.org/2000/svg">
+        <defs>
+          <linearGradient id="sf1" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0%" stop-color="#3cffd0" stop-opacity="0.25"/>
+            <stop offset="100%" stop-color="#3cffd0" stop-opacity="0"/>
+          </linearGradient>
+        </defs>
+        <path d="M0,22 L10,25 L22,27 L34,24 L46,20 L58,16 L70,12 L82,9 L94,7 L106,5 L118,4 L130,4 L140,4 L140,34 L0,34 Z" fill="url(#sf1)"/>
+        <path d="M0,22 L10,25 L22,27 L34,24 L46,20 L58,16 L70,12 L82,9 L94,7 L106,5 L118,4 L130,4 L140,4" fill="none" stroke="#3cffd0" stroke-width="1.8" stroke-linejoin="round" stroke-linecap="round"/>
+        <circle cx="140" cy="4" r="2.5" fill="#3cffd0"/>
+        <text x="2" y="9" font-size="6" fill="#949494" font-family="monospace">1M</text>
+      </svg>
+    </div>
+    <div class="price-col">$875.40<small>MCap $2.15T</small><small>Shares 24.5B</small></div>
+    <span class="ytd-col pos">+147%</span>
+    <span class="opp5y-col">+700%</span>
+    <span class="upside high">+65.7%</span>
+    <span class="horizon">2028</span>
+    <span class="analyst-pill strong-buy">Strong Buy</span>
+    <div class="prob-wrap">
+      <span class="prob-num" style="color:#3cffd0">78%</span>
+      <div class="prob-bar"><div class="prob-fill" style="width:78%;background:#3cffd0"></div></div>
+      <span class="prob-lbl">Bull</span>
+    </div>
+    <a href="thesis.html" class="view-btn">View Thesis →</a>
+  </div>
+
+  <!-- TSLA -->
+  <div class="stock-row" data-sector="ev">
+    <span class="rank">2</span>
+    <div class="ticker-block">
+      <span class="ticker">TSLA</span>
+      <span class="co-name">Tesla, Inc.</span>
+    </div>
+    <span class="sector-pill">EV · Mobility</span>
+    <div class="spark">
+      <svg viewBox="0 0 140 40" width="140" height="40" xmlns="http://www.w3.org/2000/svg">
+        <defs>
+          <linearGradient id="sf2" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0%" stop-color="#f59e0b" stop-opacity="0.2"/>
+            <stop offset="100%" stop-color="#f59e0b" stop-opacity="0"/>
+          </linearGradient>
+        </defs>
+        <path d="M0,10 L10,14 L22,18 L34,24 L46,27 L58,22 L70,28 L82,24 L94,22 L106,20 L118,19 L130,20 L140,19 L140,34 L0,34 Z" fill="url(#sf2)"/>
+        <path d="M0,10 L10,14 L22,18 L34,24 L46,27 L58,22 L70,28 L82,24 L94,22 L106,20 L118,19 L130,20 L140,19" fill="none" stroke="#f59e0b" stroke-width="1.8" stroke-linejoin="round" stroke-linecap="round"/>
+        <circle cx="140" cy="19" r="2.5" fill="#f59e0b"/>
+        <text x="2" y="9" font-size="6" fill="#949494" font-family="monospace">1M</text>
+      </svg>
+    </div>
+    <div class="price-col">$183.25<small>MCap $583B</small><small>Shares 3.18B</small></div>
+    <span class="ytd-col neg">-24%</span>
+    <span class="opp5y-col">+500%</span>
+    <span class="upside high">+107.4%</span>
+    <span class="horizon">2028</span>
+    <span class="analyst-pill hold">Hold</span>
+    <div class="prob-wrap">
+      <span class="prob-num" style="color:#f59e0b">52%</span>
+      <div class="prob-bar"><div class="prob-fill" style="width:52%;background:#f59e0b"></div></div>
+      <span class="prob-lbl">Bull</span>
+    </div>
+    <a href="thesis.html" class="view-btn">View Thesis →</a>
+  </div>
+
+  <!-- META -->
+  <div class="stock-row" data-sector="social">
+    <span class="rank">3</span>
+    <div class="ticker-block">
+      <span class="ticker">META</span>
+      <span class="co-name">Meta Platforms, Inc.</span>
+    </div>
+    <span class="sector-pill">Social · AI</span>
+    <div class="spark">
+      <svg viewBox="0 0 140 40" width="140" height="40" xmlns="http://www.w3.org/2000/svg">
+        <defs>
+          <linearGradient id="sf3" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0%" stop-color="#3cffd0" stop-opacity="0.22"/>
+            <stop offset="100%" stop-color="#3cffd0" stop-opacity="0"/>
+          </linearGradient>
+        </defs>
+        <path d="M0,26 L10,24 L22,22 L34,20 L46,18 L58,16 L70,14 L82,13 L94,11 L106,10 L118,8 L130,7 L140,7 L140,34 L0,34 Z" fill="url(#sf3)"/>
+        <path d="M0,26 L10,24 L22,22 L34,20 L46,18 L58,16 L70,14 L82,13 L94,11 L106,10 L118,8 L130,7 L140,7" fill="none" stroke="#3cffd0" stroke-width="1.8" stroke-linejoin="round" stroke-linecap="round"/>
+        <circle cx="140" cy="7" r="2.5" fill="#3cffd0"/>
+        <text x="2" y="9" font-size="6" fill="#949494" font-family="monospace">1M</text>
+      </svg>
+    </div>
+    <div class="price-col">$528.60<small>MCap $1.35T</small><small>Shares 2.56B</small></div>
+    <span class="ytd-col pos">+75%</span>
+    <span class="opp5y-col">+380%</span>
+    <span class="upside mid">+52.3%</span>
+    <span class="horizon">2027</span>
+    <span class="analyst-pill strong-buy">Strong Buy</span>
+    <div class="prob-wrap">
+      <span class="prob-num" style="color:#22c55e">74%</span>
+      <div class="prob-bar"><div class="prob-fill" style="width:74%;background:#22c55e"></div></div>
+      <span class="prob-lbl">Bull</span>
+    </div>
+    <a href="thesis.html" class="view-btn">View Thesis →</a>
+  </div>
+
+  <!-- AMZN -->
+  <div class="stock-row" data-sector="cloud">
+    <span class="rank">4</span>
+    <div class="ticker-block">
+      <span class="ticker">AMZN</span>
+      <span class="co-name">Amazon.com, Inc.</span>
+    </div>
+    <span class="sector-pill">Cloud · Commerce</span>
+    <div class="spark">
+      <svg viewBox="0 0 140 40" width="140" height="40" xmlns="http://www.w3.org/2000/svg">
+        <defs>
+          <linearGradient id="sf4" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0%" stop-color="#22c55e" stop-opacity="0.2"/>
+            <stop offset="100%" stop-color="#22c55e" stop-opacity="0"/>
+          </linearGradient>
+        </defs>
+        <path d="M0,24 L10,22 L22,21 L34,23 L46,20 L58,18 L70,17 L82,15 L94,14 L106,13 L118,12 L130,11 L140,10 L140,34 L0,34 Z" fill="url(#sf4)"/>
+        <path d="M0,24 L10,22 L22,21 L34,23 L46,20 L58,18 L70,17 L82,15 L94,14 L106,13 L118,12 L130,11 L140,10" fill="none" stroke="#22c55e" stroke-width="1.8" stroke-linejoin="round" stroke-linecap="round"/>
+        <circle cx="140" cy="10" r="2.5" fill="#22c55e"/>
+        <text x="2" y="9" font-size="6" fill="#949494" font-family="monospace">1M</text>
+      </svg>
+    </div>
+    <div class="price-col">$192.40<small>MCap $2.02T</small><small>Shares 10.5B</small></div>
+    <span class="ytd-col pos">+28%</span>
+    <span class="opp5y-col">+280%</span>
+    <span class="upside mid">+45.5%</span>
+    <span class="horizon">2028</span>
+    <span class="analyst-pill buy">Buy</span>
+    <div class="prob-wrap">
+      <span class="prob-num" style="color:#22c55e">72%</span>
+      <div class="prob-bar"><div class="prob-fill" style="width:72%;background:#22c55e"></div></div>
+      <span class="prob-lbl">Bull</span>
+    </div>
+    <a href="thesis.html" class="view-btn">View Thesis →</a>
+  </div>
+
+  <!-- MSFT -->
+  <div class="stock-row" data-sector="cloud">
+    <span class="rank">5</span>
+    <div class="ticker-block">
+      <span class="ticker">MSFT</span>
+      <span class="co-name">Microsoft Corporation</span>
+    </div>
+    <span class="sector-pill">Cloud · AI</span>
+    <div class="spark">
+      <svg viewBox="0 0 140 40" width="140" height="40" xmlns="http://www.w3.org/2000/svg">
+        <defs>
+          <linearGradient id="sf5" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0%" stop-color="#22c55e" stop-opacity="0.18"/>
+            <stop offset="100%" stop-color="#22c55e" stop-opacity="0"/>
+          </linearGradient>
+        </defs>
+        <path d="M0,20 L10,22 L22,24 L34,22 L46,20 L58,19 L70,18 L82,17 L94,16 L106,15 L118,14 L130,13 L140,13 L140,34 L0,34 Z" fill="url(#sf5)"/>
+        <path d="M0,20 L10,22 L22,24 L34,22 L46,20 L58,19 L70,18 L82,17 L94,16 L106,15 L118,14 L130,13 L140,13" fill="none" stroke="#22c55e" stroke-width="1.8" stroke-linejoin="round" stroke-linecap="round"/>
+        <circle cx="140" cy="13" r="2.5" fill="#22c55e"/>
+        <text x="2" y="9" font-size="6" fill="#949494" font-family="monospace">1M</text>
+      </svg>
+    </div>
+    <div class="price-col">$421.80<small>MCap $3.13T</small><small>Shares 7.43B</small></div>
+    <span class="ytd-col pos">+17%</span>
+    <span class="opp5y-col">+250%</span>
+    <span class="upside mid">+38.0%</span>
+    <span class="horizon">2028</span>
+    <span class="analyst-pill buy">Buy</span>
+    <div class="prob-wrap">
+      <span class="prob-num" style="color:#3cffd0">85%</span>
+      <div class="prob-bar"><div class="prob-fill" style="width:85%;background:#3cffd0"></div></div>
+      <span class="prob-lbl">Bull</span>
+    </div>
+    <a href="thesis.html" class="view-btn">View Thesis →</a>
+  </div>
+
+  <!-- AAPL -->
+  <div class="stock-row" data-sector="consumer">
+    <span class="rank">6</span>
+    <div class="ticker-block">
+      <span class="ticker">AAPL</span>
+      <span class="co-name">Apple Inc.</span>
+    </div>
+    <span class="sector-pill">Consumer Tech</span>
+    <div class="spark">
+      <svg viewBox="0 0 140 40" width="140" height="40" xmlns="http://www.w3.org/2000/svg">
+        <defs>
+          <linearGradient id="sf6" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0%" stop-color="#f59e0b" stop-opacity="0.18"/>
+            <stop offset="100%" stop-color="#f59e0b" stop-opacity="0"/>
+          </linearGradient>
+        </defs>
+        <path d="M0,15 L10,17 L22,21 L34,25 L46,27 L58,28 L70,26 L82,24 L94,22 L106,21 L118,20 L130,20 L140,20 L140,34 L0,34 Z" fill="url(#sf6)"/>
+        <path d="M0,15 L10,17 L22,21 L34,25 L46,27 L58,28 L70,26 L82,24 L94,22 L106,21 L118,20 L130,20 L140,20" fill="none" stroke="#f59e0b" stroke-width="1.8" stroke-linejoin="round" stroke-linecap="round"/>
+        <circle cx="140" cy="20" r="2.5" fill="#f59e0b"/>
+        <text x="2" y="9" font-size="6" fill="#949494" font-family="monospace">1M</text>
+      </svg>
+    </div>
+    <div class="price-col">$192.10<small>MCap $2.95T</small><small>Shares 15.3B</small></div>
+    <span class="ytd-col pos">+16%</span>
+    <span class="opp5y-col">+180%</span>
+    <span class="upside low">+30.1%</span>
+    <span class="horizon">2027</span>
+    <span class="analyst-pill buy">Buy</span>
+    <div class="prob-wrap">
+      <span class="prob-num" style="color:#3cffd0">82%</span>
+      <div class="prob-bar"><div class="prob-fill" style="width:82%;background:#3cffd0"></div></div>
+      <span class="prob-lbl">Bull</span>
+    </div>
+    <a href="thesis.html" class="view-btn">View Thesis →</a>
+  </div>
+
+  <!-- ADD ROW -->
+  <a href="thesis.html" class="add-row">
+    <div class="add-icon">+</div>
+    <span class="add-lbl">Add Stock — Build your thesis</span>
+  </a>
+</main>
+
+<script>
+  function setFilter(el, val) {
+    document.querySelectorAll('.fpill').forEach(p => p.classList.remove('on'));
+    el.classList.add('on');
+    document.querySelectorAll('.stock-row').forEach(row => {
+      if (val === 'all' || row.dataset.sector === val) {
+        row.style.display = '';
+      } else {
+        row.style.display = 'none';
+      }
+    });
+  }
+</script>
+</body>
+</html>
