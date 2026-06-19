@@ -171,6 +171,14 @@ function generateMockThesis(symbol) {
   const holds         = num(1, 5)
   const sells         = num(0, 2)
 
+  const sharesM       = num(200, 2000)          // millions of shares
+  const marketCapB    = Math.round(curPrice * sharesM / 1000 * 10) / 10  // $B
+  const ytdSign       = num(0, 1) === 0 ? '+' : '-'
+  const ytdMag        = num(8, 180)
+  const ytdGain       = ytdSign + ytdMag + '%'
+
+  const action        = pick(['Strong Buy', 'Strong Buy', 'Buy', 'Buy', 'Hold'])
+
   return {
     symbol: s,
     companyName: `${s} Corporation`,
@@ -179,7 +187,13 @@ function generateMockThesis(symbol) {
     priceTarget2030: basePrice,
     analystPriceTarget: analystTarget,
     upsidePercent: `+${baseReturn}%`,
-    action: pick(['Strong Buy', 'Strong Buy', 'Buy', 'Buy', 'Hold']),
+    action,
+    ytdGain,
+    marketCapB,
+    sharesM,
+    bullProb,
+    baseProb,
+    bearProb,
     generatedAt: new Date().toISOString(),
 
     overview: `${s} is a high-growth ${sector} company positioned at the intersection of structural megatrends in AI, cloud, and digital transformation. The company has demonstrated exceptional capital efficiency with revenue growing at ${revenueCAGR}%+ CAGR. ${s}'s proprietary platform creates deep competitive moats through switching costs, network effects, and a cornered resource position in talent and data.`,

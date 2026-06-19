@@ -763,13 +763,22 @@
   const API_BASE = 'https://stock10x.vercel.app/api';
 
   let _rowCounter = 0;
-  function buildRowHTML(symbol, name, sector, price, action, target, upside, rank) {
+  function buildRowHTML(symbol, name, sector, price, action, target, upside, rank, extra) {
     const id = ++_rowCounter;
-    const analystClass = (action || 'hold').toLowerCase().replace(' ', '-');
+    extra = extra || {};
+    const analystClass = (action || 'hold').toLowerCase().replace(/\s+/g,'-');
     const upsideVal    = upside || '—';
     const upsideClass  = upsideVal.startsWith('+') ? (parseInt(upsideVal) >= 80 ? 'high' : 'mid') : 'low';
     const sectorLabel  = SECTOR_LABELS[sector] || sector || 'Other';
     const opp = (target && price) ? '+' + Math.round(((target - price) / price) * 100) + '%' : '—';
+
+    const ytd      = extra.ytdGain || '—';
+    const ytdClass = ytd.startsWith('+') ? 'pos' : (ytd.startsWith('-') ? 'neg' : '');
+    const mcap     = extra.marketCapB  ? `$${extra.marketCapB}B`  : '—';
+    const shares   = extra.sharesM     ? `${extra.sharesM}M`      : '—';
+    const bullProb = extra.bullProb    || 0;
+    const probColor = bullProb >= 70 ? '#3cffd0' : (bullProb >= 50 ? '#22c55e' : '#f59e0b');
+
     return `
       <span class="rank">${rank}</span>
       <div class="ticker-block">
@@ -788,15 +797,15 @@
           <text x="2" y="9" font-size="6" fill="#949494" font-family="monospace">1M</text>
         </svg>
       </div>
-      <div class="price-col">${price ? '$' + price.toFixed(2) : '—'}<small>MCap —</small><small>Shares —</small></div>
-      <span class="ytd-col pos">—</span>
+      <div class="price-col">${price ? '$' + price.toFixed(2) : '—'}<small>MCap ${mcap}</small><small>Shares ${shares}</small></div>
+      <span class="ytd-col ${ytdClass}">${ytd}</span>
       <span class="opp5y-col">${opp}</span>
       <span class="upside ${upsideClass}">${upsideVal}</span>
       <span class="horizon">2030</span>
       <span class="analyst-pill ${analystClass}">${action || 'Hold'}</span>
       <div class="prob-wrap">
-        <span class="prob-num" style="color:#949494">—</span>
-        <div class="prob-bar"><div class="prob-fill" style="width:0%;background:#949494"></div></div>
+        <span class="prob-num" style="color:${probColor}">${bullProb ? bullProb + '%' : '—'}</span>
+        <div class="prob-bar"><div class="prob-fill" style="width:${bullProb}%;background:${probColor}"></div></div>
         <span class="prob-lbl">Bull</span>
       </div>
       <a href="thesis.html?symbol=${symbol}" class="view-btn">View Thesis →</a>
@@ -814,55 +823,74 @@
     const res    = document.getElementById('f-lookup-result');
 
     btn.disabled = true;
-    btnTxt.textContent = 'Looking up…';
-    res.style.display = 'none';
+    btnTxt.textContent = 'Generating thesis…';
+    res.style.display = 'block';
+    res.innerHTML = `<span style="color:var(--accent)">⟳ Fetching data for <strong>${symbol}</strong> and building thesis…</span>`;
 
+    // Step 1: try the known-stock endpoint
     let data = null;
     try {
-      const resp = await fetch(`${API_BASE}/stock/${symbol}`);
-      if (resp.ok) data = await resp.json();
+      const r = await fetch(`${API_BASE}/stock/${symbol}`);
+      if (r.ok) data = await r.json();
     } catch(e) {}
 
-    const name   = document.getElementById('f-name').value.trim() || (data && data.name) || symbol;
-    const sector = document.getElementById('f-sector').value;
-    const price  = data ? data.currentPrice  : null;
-    const action = data ? data.action        : 'Hold';
-    const target = data ? data.priceTarget2030 : null;
-    const upside = data ? data.upsidePercent : '—';
-
-    if (data) {
-      res.style.display = 'block';
-      res.innerHTML = `<span style="color:var(--accent);font-weight:600">${data.symbol}</span>
-        <span style="color:var(--muted);margin-left:8px">${data.name}</span><br>
-        <span style="color:var(--muted)">Price: </span><strong>$${data.currentPrice}</strong>
-        &nbsp;&nbsp;<span style="color:var(--muted)">Target 2030: </span><strong style="color:var(--accent)">$${data.priceTarget2030}</strong>
-        &nbsp;&nbsp;<span style="color:var(--muted)">Action: </span><strong>${data.action}</strong>`;
-    } else {
-      res.style.display = 'block';
-      res.innerHTML = `<span style="color:var(--amber)">⚠ Symbol not in database — added with placeholder data. Build your thesis manually.</span>`;
+    // Step 2: if not in pre-built list, auto-generate a thesis (creates & caches in Supabase)
+    if (!data) {
+      try {
+        const r = await fetch(`${API_BASE}/generate-thesis`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ symbol })
+        });
+        if (r.ok) data = await r.json();
+      } catch(e) {}
     }
 
-    const stockData = { symbol, name: data ? data.name : name, sector, price, action, target, upside };
+    const sector = document.getElementById('f-sector').value;
+
+    if (data) {
+      res.innerHTML = `<span style="color:var(--accent);font-weight:600">${data.symbol}</span>
+        <span style="color:var(--muted);margin-left:8px">${data.companyName || data.name || symbol}</span><br>
+        <span style="color:var(--muted)">Price: </span><strong>$${data.currentPrice}</strong>
+        &nbsp;<span style="color:var(--muted)">→2030: </span><strong style="color:var(--accent)">$${data.priceTarget2030}</strong>
+        &nbsp;<span style="color:var(--muted)">Action: </span><strong>${data.action}</strong>
+        &nbsp;<span style="color:var(--muted)">Bull: </span><strong style="color:#3cffd0">${data.bullProb || '—'}%</strong>`;
+    } else {
+      res.innerHTML = `<span style="color:var(--red)">✕ Could not reach server — adding with placeholder data.</span>`;
+    }
+
+    const name   = (data && (data.companyName || data.name)) || symbol;
+    const price  = data ? data.currentPrice   : null;
+    const action = data ? data.action         : 'Hold';
+    const target = data ? data.priceTarget2030: null;
+    const upside = data ? data.upsidePercent  : '—';
+    const extra  = data ? {
+      ytdGain:    data.ytdGain,
+      marketCapB: data.marketCapB,
+      sharesM:    data.sharesM,
+      bullProb:   data.bullProb
+    } : {};
+
+    const stockData = { symbol, name, sector, price, action, target, upside, extra };
 
     // Persist to localStorage
     try {
-      const extra = JSON.parse(localStorage.getItem(LS_EXTRA) || '[]');
-      if (!extra.find(s => s.symbol === symbol)) extra.push(stockData);
-      else Object.assign(extra.find(s => s.symbol === symbol), stockData);
-      localStorage.setItem(LS_EXTRA, JSON.stringify(extra));
+      const saved = JSON.parse(localStorage.getItem(LS_EXTRA) || '[]');
+      const idx = saved.findIndex(s => s.symbol === symbol);
+      if (idx === -1) saved.push(stockData); else saved[idx] = stockData;
+      localStorage.setItem(LS_EXTRA, JSON.stringify(saved));
 
-      // Remove from deleted list if re-adding
       const deleted = JSON.parse(localStorage.getItem(LS_DELETED) || '[]');
       localStorage.setItem(LS_DELETED, JSON.stringify(deleted.filter(s => s !== symbol)));
     } catch(e) {}
 
     const rank = document.querySelectorAll('.stock-row').length + 1;
-    const row = document.createElement('div');
-    row.className = 'stock-row';
+    const row  = document.createElement('div');
+    row.className    = 'stock-row';
     row.dataset.sector = sector;
     row.dataset.symbol = symbol;
-    row.style.opacity = '0';
-    row.innerHTML = buildRowHTML(symbol, data ? data.name : name, sector, price, action, target, upside, rank);
+    row.style.opacity  = '0';
+    row.innerHTML = buildRowHTML(symbol, name, sector, price, action, target, upside, rank, extra);
 
     const addBtn = document.querySelector('.add-row');
     addBtn.parentNode.insertBefore(row, addBtn);
@@ -870,7 +898,7 @@
 
     btn.disabled = false;
     btnTxt.textContent = 'Lookup & Add →';
-    setTimeout(closeModal, data ? 800 : 400);
+    setTimeout(closeModal, data ? 900 : 400);
   }
 
   /* ── Restore persisted state on page load ── */
@@ -887,14 +915,14 @@
 
       // Re-add user-added stocks
       const addBtn = document.querySelector('.add-row');
-      extra.forEach((s, i) => {
-        if (document.querySelector(`.stock-row[data-symbol="${s.symbol}"]`)) return; // already in DOM
+      extra.forEach((s) => {
+        if (document.querySelector(`.stock-row[data-symbol="${s.symbol}"]`)) return;
         const rank = document.querySelectorAll('.stock-row').length + 1;
-        const row = document.createElement('div');
-        row.className = 'stock-row';
+        const row  = document.createElement('div');
+        row.className    = 'stock-row';
         row.dataset.sector = s.sector || 'other';
         row.dataset.symbol = s.symbol;
-        row.innerHTML = buildRowHTML(s.symbol, s.name, s.sector, s.price, s.action, s.target, s.upside, rank);
+        row.innerHTML = buildRowHTML(s.symbol, s.name, s.sector, s.price, s.action, s.target, s.upside, rank, s.extra || {});
         addBtn.parentNode.insertBefore(row, addBtn);
       });
 

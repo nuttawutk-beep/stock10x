@@ -1465,13 +1465,14 @@
       }
     } catch (_) {}
 
-    // 2. No cache — show Generate button
+    // 2. No cache — auto-generate immediately
     const banner = document.getElementById('thesis-banner');
     if (banner) {
-      banner.style.background = 'rgba(82,0,255,0.10)';
-      banner.style.borderColor = '#5200ff';
-      banner.innerHTML = `<span style="color:#5200ff;font-weight:600">${symbol}</span> — No thesis found. &nbsp;<button onclick="generateThesis('${symbol}')" style="background:#3cffd0;border:none;color:#000;font-family:'JetBrains Mono',monospace;font-size:10px;font-weight:600;letter-spacing:1.2px;text-transform:uppercase;padding:6px 16px;border-radius:20px;cursor:pointer">Generate AI Thesis</button> &nbsp;<span style="font-size:10px;color:#3a3a3a">~2 seconds</span>`;
+      banner.style.background = 'rgba(60,255,208,0.06)';
+      banner.style.borderColor = '#3cffd0';
+      banner.innerHTML = `<span style="color:#3cffd0;font-weight:600">${symbol}</span> — No thesis found. Auto-generating… <span style="color:#949494;font-size:10px">(~2 sec)</span>`;
     }
+    generateThesis(symbol);
   })();
 </script>
 </body>
