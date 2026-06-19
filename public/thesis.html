@@ -1011,6 +1011,13 @@
 
 </div><!-- /content -->
 
+<!-- AI Thesis loading overlay -->
+<div id="thesis-loader" style="display:none;position:fixed;inset:0;background:rgba(13,13,13,0.97);z-index:9999;align-items:center;justify-content:center;flex-direction:column;gap:28px">
+  <div style="font-family:'Anton',Impact,sans-serif;font-size:28px;letter-spacing:0.12em;color:#3cffd0;text-align:center">GENERATING THESIS</div>
+  <div id="loader-steps" style="display:flex;flex-direction:column;gap:12px;min-width:320px"></div>
+  <div style="font-family:'JetBrains Mono',monospace;font-size:10px;color:#3a3a3a;letter-spacing:1px;text-transform:uppercase;margin-top:8px">AI-generated · Mock data · Anthropic API key unlocks real research</div>
+</div>
+
 <script>
   function showTab(id) {
     document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
@@ -1137,56 +1144,334 @@
     }
   }
 
+  /* ── Helpers ── */
+  const API = 'https://stock10x.vercel.app';
+
+  function tamToSvgPath(values, split) {
+    const w = 560, h = 110;
+    const maxV = Math.max(...values);
+    const xStep = w / (values.length - 1);
+    const pts = values.map((v, i) => ({ x: 20 + i * xStep, y: 140 - (v / maxV) * h }));
+    const solid = pts.slice(0, split + 1).map((p, i) => `${i===0?'M':'L'}${p.x.toFixed(1)},${p.y.toFixed(1)}`).join(' ');
+    const dashed = pts.slice(split).map((p, i) => `${i===0?'M':'L'}${p.x.toFixed(1)},${p.y.toFixed(1)}`).join(' ');
+    return { solid, dashed, pts };
+  }
+
+  /* ── Populate thesis sections from API data ── */
+  function populateThesis(d) {
+    // Header
+    const sticker = document.querySelector('.sticker');
+    const sname   = document.querySelector('.sname');
+    const scat    = document.querySelector('.scat');
+    if (sticker) sticker.textContent = d.symbol;
+    if (sname)   sname.textContent   = d.companyName || d.symbol;
+    if (scat)    scat.textContent    = d.sector || '—';
+
+    document.title = `Stock10x — ${d.symbol} Thesis`;
+
+    // KPI strip
+    const kpis = document.querySelectorAll('.kpi');
+    const kv = (i, v) => { if (kpis[i]) kpis[i].querySelector('.kpi-v').textContent = v; };
+    kv(0, d.currentPrice   ? `$${d.currentPrice.toLocaleString()}`   : '—');
+    kv(1, d.priceTarget2030 ? `$${d.priceTarget2030.toLocaleString()}` : '—');
+    kv(2, d.upsidePercent  || '—');
+    kv(3, d.scenarios?.bull ? `${d.scenarios.bull.prob}%` : '—');
+    kv(4, d.action         || '—');
+
+    // Scenario strip
+    const sc = d.scenarios || {};
+    [['bull', sc.bull], ['base', sc.base], ['bear', sc.bear]].forEach(([cls, s]) => {
+      if (!s) return;
+      const chip = document.querySelector(`.s-chip.${cls}`);
+      if (!chip) return;
+      const sp = chip.querySelector('.s-price'); const st = chip.querySelector('.s-pct');
+      if (sp) sp.textContent = `$${s.price}`;
+      if (st) st.textContent = `${s.return} · ${s.prob}% prob`;
+    });
+
+    // Price bar labels in overview
+    document.querySelectorAll('#panel-overview [style*="justify-content:space-between"] span').forEach((el, i) => {
+      if (i === 0 && sc.bear) el.textContent = `$${sc.bear.price}`;
+      if (i === 1 && sc.bull) el.textContent = `$${sc.bull.price}`;
+    });
+    const overviewPrices = document.querySelectorAll('#panel-overview [style*="font-size:18px"]');
+    if (overviewPrices[0] && d.currentPrice)    overviewPrices[0].textContent = `$${d.currentPrice}`;
+    if (overviewPrices[1] && d.priceTarget2030)  overviewPrices[1].textContent = `$${d.priceTarget2030}`;
+
+    // Overview narrative
+    const narr = document.querySelector('.narrative-block p');
+    if (narr && d.coreThesis) narr.textContent = d.coreThesis;
+
+    // 3-card snapshot (10X Driver, Moat, Catalyst)
+    const snapCards = document.querySelectorAll('#panel-overview .grid3 .card');
+    const drvrs = d.drivers || {};
+    const cardData = [['10X Driver', drvrs.driver10x], ['Moat', drvrs.moat], ['Catalyst', drvrs.catalyst]];
+    cardData.forEach(([lbl, txt], i) => {
+      if (!snapCards[i]) return;
+      const h3 = snapCards[i].querySelector('h3');
+      const p  = snapCards[i].querySelector('p');
+      if (h3) h3.textContent = lbl;
+      if (p && txt) p.textContent = txt;
+    });
+
+    // 7 Powers
+    const powers = d.sevenPowers || [];
+    document.querySelectorAll('.power-row').forEach((row, i) => {
+      const p = powers[i]; if (!p) return;
+      const desc  = row.querySelector('.power-desc');
+      const stars = row.querySelector('.power-stars');
+      const grade = row.querySelector('.power-grade');
+      if (desc)  desc.textContent  = p.description;
+      if (stars) stars.textContent = '★'.repeat(p.stars || 0) + '☆'.repeat(5 - (p.stars || 0));
+      if (grade) grade.textContent = p.grade || '—';
+    });
+
+    // SWOT
+    const swot = d.swot || {};
+    const swotSections = document.querySelectorAll('.swot-item');
+    const swotData = [swot.strengths, swot.weaknesses, swot.opportunities, swot.threats];
+    swotData.forEach((items, si) => {
+      if (!swotSections[si] || !items) return;
+      swotSections[si].querySelectorAll('li').forEach((li, li_i) => {
+        if (items[li_i]) li.textContent = items[li_i];
+      });
+    });
+
+    // TAM chart (SVG line chart)
+    const mktPanel = document.getElementById('panel-market');
+    if (mktPanel && d.tam) {
+      const { years, values, cagr, description } = d.tam;
+      const { solid, dashed, pts } = tamToSvgPath(values, 2); // split after 2026E (index 2)
+      const maxV = Math.max(...values);
+      const xStep = 560 / (values.length - 1);
+
+      // Replace SVG paths
+      const svgSolid  = mktPanel.querySelector('path[stroke="#ffffff"]') || mktPanel.querySelector('path.tam-solid');
+      const svgDashed = mktPanel.querySelector('path[stroke-dasharray]') || mktPanel.querySelector('path.tam-dashed');
+      if (svgSolid)  svgSolid.setAttribute('d', solid);
+      if (svgDashed) svgDashed.setAttribute('d', dashed);
+
+      // Dots
+      const dots = mktPanel.querySelectorAll('circle');
+      pts.forEach((pt, i) => {
+        if (dots[i]) { dots[i].setAttribute('cx', pt.x.toFixed(1)); dots[i].setAttribute('cy', pt.y.toFixed(1)); }
+      });
+
+      // Year + value text labels
+      const tamLabels = mktPanel.querySelectorAll('.tam-label, text[fill="#949494"]');
+      years.forEach((yr, i) => {
+        if (tamLabels[i]) tamLabels[i].textContent = yr;
+      });
+      const tamVals = mktPanel.querySelectorAll('.tam-val, text[fill="#ffffff"]');
+      values.forEach((v, i) => {
+        if (tamVals[i]) tamVals[i].textContent = v >= 1000 ? `$${(v/1000).toFixed(1)}T` : `$${v}B`;
+      });
+
+      // Description text
+      const tamDesc = mktPanel.querySelector('.tam-description, .card p');
+      if (tamDesc && description) tamDesc.textContent = description;
+
+      // CAGR badge
+      const cagrEl = mktPanel.querySelector('.tam-cagr, [style*="color:var(--accent)"]');
+      if (cagrEl && cagr) cagrEl.textContent = cagr + ' CAGR';
+    }
+
+    // Key players
+    const players = d.keyPlayers || [];
+    const playerNames = document.querySelectorAll('.player-name');
+    const playerRoles = document.querySelectorAll('.player-role');
+    const playerNotes = document.querySelectorAll('.player-note');
+    players.forEach((pl, i) => {
+      if (playerNames[i]) playerNames[i].textContent = pl.name;
+      if (playerRoles[i]) playerRoles[i].textContent = pl.role;
+      if (playerNotes[i]) playerNotes[i].textContent = pl.note;
+    });
+
+    // Financials panel — revenue rows
+    const fin = d.financials || {};
+    const finPanel = document.getElementById('panel-financials');
+    if (finPanel && fin.revenue) {
+      const trs = finPanel.querySelectorAll('tbody tr');
+      fin.revenue.forEach((r, i) => {
+        if (!trs[i]) return;
+        const tds = trs[i].querySelectorAll('td');
+        if (tds[0]) tds[0].textContent = r.year;
+        if (tds[1]) tds[1].textContent = `$${r.value}M`;
+      });
+      // Margin summary KPIs
+      const gmEl = finPanel.querySelector('.gm-val');
+      const ebEl = finPanel.querySelector('.eb-val');
+      if (gmEl && fin.grossMargin) gmEl.textContent = fin.grossMargin;
+      if (ebEl && fin.ebitdaMargin) ebEl.textContent = fin.ebitdaMargin;
+    }
+
+    // Valuation
+    const val = d.valuation || {};
+    if (finPanel && val.baseTarget) {
+      const valPrices = finPanel.querySelectorAll('.val-price');
+      [val.dcfTarget, val.compsTarget, val.baseTarget].forEach((p, i) => {
+        if (valPrices[i] && p) valPrices[i].textContent = `$${p}`;
+      });
+      const adNums = finPanel.querySelectorAll('.ad-num');
+      if (adNums[0]) adNums[0].textContent = val.strongBuyCount || '—';
+      if (adNums[1]) adNums[1].textContent = val.buyCount       || '—';
+      if (adNums[2]) adNums[2].textContent = val.holdCount      || '—';
+      if (adNums[3]) adNums[3].textContent = val.sellCount      || '—';
+      const ptRange = finPanel.querySelector('.pt-range');
+      if (ptRange) ptRange.textContent = `$${val.ptRangeLow} – $${val.ptRangeHigh}`;
+      const valNote = finPanel.querySelector('.val-note p, .val-desc');
+      if (valNote && val.description) valNote.textContent = val.description;
+    }
+
+    // Scenarios panel
+    const scenPanel = document.getElementById('panel-scenarios');
+    if (scenPanel && d.scenarios) {
+      ['bull', 'base', 'bear'].forEach(key => {
+        const s = d.scenarios[key]; if (!s) return;
+        const block = scenPanel.querySelector(`.sc-block-${key}, .scenario-${key}, [data-scenario="${key}"]`);
+        const allBlocks = scenPanel.querySelectorAll('.sc-block, .scenario-block');
+        const blockIdx = { bull: 0, base: 1, bear: 2 }[key];
+        const blk = block || allBlocks[blockIdx];
+        if (!blk) return;
+        const sp = blk.querySelector('.sc-price');
+        const sr = blk.querySelector('.sc-return');
+        const sp2 = blk.querySelector('.sc-prob');
+        if (sp)  sp.textContent  = `$${s.price}`;
+        if (sr)  sr.textContent  = s.return;
+        if (sp2) sp2.textContent = `${s.prob}% Probability`;
+        blk.querySelectorAll('.sc-assumptions li').forEach((li, li_i) => {
+          if (s.assumptions[li_i]) li.textContent = s.assumptions[li_i];
+        });
+      });
+
+      // EV (probability-weighted) calculation
+      const evEl = scenPanel.querySelector('[style*="font-size:36px"]');
+      if (evEl && d.scenarios.bull && d.scenarios.base && d.scenarios.bear) {
+        const ev = Math.round(
+          d.scenarios.bull.price * d.scenarios.bull.prob / 100 +
+          d.scenarios.base.price * d.scenarios.base.prob / 100 +
+          d.scenarios.bear.price * d.scenarios.bear.prob / 100
+        );
+        evEl.textContent = `$${ev}`;
+        const evRetEl = scenPanel.querySelector('[style*="color:var(--green)"]');
+        if (evRetEl && d.currentPrice) {
+          const evRet = Math.round((ev - d.currentPrice) / d.currentPrice * 100);
+          evRetEl.textContent = `+${evRet}% expected value`;
+        }
+      }
+
+      // Update EV calc paragraph
+      const evCalcP = scenPanel.querySelector('.card p');
+      if (evCalcP && d.scenarios.bull && d.scenarios.base && d.scenarios.bear && d.currentPrice) {
+        const b = d.scenarios.bull, ba = d.scenarios.base, be = d.scenarios.bear;
+        const ev = Math.round(b.price*b.prob/100 + ba.price*ba.prob/100 + be.price*be.prob/100);
+        evCalcP.innerHTML = `<strong>Calculation:</strong> ($${b.price} × ${b.prob/100}) + ($${ba.price} × ${ba.prob/100}) + ($${be.price} × ${be.prob/100}) = <strong style="color:var(--accent)">$${ev} weighted average.</strong> Risk/reward is asymmetric: Bull upside (${b.return}) outweighs Bear downside (${be.return}) on a ${b.prob}:${be.prob} probability ratio.`;
+      }
+    }
+
+    // Update banner to "Generated" state
+    const banner = document.getElementById('thesis-banner');
+    if (banner) {
+      banner.style.background = 'rgba(60,255,208,0.06)';
+      banner.style.borderColor = '#3cffd0';
+      banner.innerHTML = `<span style="color:#3cffd0;font-weight:600">✓ AI THESIS GENERATED</span> &nbsp;·&nbsp; ${d.companyName} (${d.symbol}) &nbsp;·&nbsp; <span style="color:#fff">Base target $${d.priceTarget2030}</span> &nbsp;·&nbsp; <span style="color:#3cffd0">${d.upsidePercent} upside</span> &nbsp;·&nbsp; ${d.action} &nbsp;&nbsp;<button onclick="generateThesis('${d.symbol}', true)" style="margin-left:12px;background:transparent;border:1px solid #3a3a3a;color:#949494;font-family:var(--font-m);font-size:9px;letter-spacing:1px;padding:3px 10px;border-radius:6px;cursor:pointer;text-transform:uppercase">Regenerate</button>`;
+    }
+  }
+
+  /* ── Generate (or regenerate) a thesis ── */
+  async function generateThesis(symbol, force) {
+    const loader = document.getElementById('thesis-loader');
+    loader.style.display = 'flex';
+
+    const steps = [
+      'Fetching market data…',
+      'Analyzing fundamentals & financials…',
+      'Building 7 Powers & SWOT framework…',
+      'Modeling TAM, valuation & scenarios…',
+      'Assembling thesis…',
+    ];
+    const stepsEl = document.getElementById('loader-steps');
+    stepsEl.innerHTML = '';
+
+    const stepEls = steps.map(txt => {
+      const el = document.createElement('div');
+      el.style.cssText = 'display:flex;align-items:center;gap:12px;font-family:var(--font-m);font-size:11px;letter-spacing:0.8px;color:#3a3a3a;transition:color 0.3s';
+      el.innerHTML = `<span style="width:8px;height:8px;border-radius:50%;background:#2a2a2a;flex-shrink:0;transition:background 0.3s"></span>${txt}`;
+      stepsEl.appendChild(el);
+      return el;
+    });
+
+    const activate = async (i, delay) => {
+      await new Promise(r => setTimeout(r, delay));
+      stepEls[i].style.color = '#ffffff';
+      stepEls[i].querySelector('span').style.background = '#3cffd0';
+    };
+
+    activate(0, 200); activate(1, 600); activate(2, 900); activate(3, 1200); activate(4, 1500);
+
+    try {
+      const resp = await fetch(`${API}/api/generate-thesis`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ symbol }),
+      });
+      if (!resp.ok) throw new Error(await resp.text());
+      const data = await resp.json();
+
+      await new Promise(r => setTimeout(r, 1800));
+      loader.style.display = 'none';
+      populateThesis(data);
+    } catch (err) {
+      loader.style.display = 'none';
+      const banner = document.getElementById('thesis-banner');
+      if (banner) banner.innerHTML = `<span style="color:#ef4444">Generation failed: ${err.message}</span> — <button onclick="generateThesis('${symbol}')" style="background:transparent;border:none;color:#3cffd0;cursor:pointer;font-family:var(--font-m);font-size:10px;text-decoration:underline">Retry</button>`;
+    }
+  }
+
   /* ── Symbol from URL param ── */
   (async function initSymbol() {
     const params = new URLSearchParams(window.location.search);
     const symbol = (params.get('symbol') || 'NVDA').toUpperCase();
 
-    if (symbol === 'NVDA') return; // default page — no update needed
-
-    // Update page title + header identifiers
     document.title = `Stock10x — ${symbol} Thesis`;
     const sticker = document.querySelector('.sticker');
-    const sname = document.querySelector('.sname');
-    const scat  = document.querySelector('.scat');
+    const sname   = document.querySelector('.sname');
+    const scat    = document.querySelector('.scat');
     if (sticker) sticker.textContent = symbol;
-    if (sname)   sname.textContent = symbol;
-    if (scat)    scat.textContent = '—';
 
-    // Clear all NVDA content immediately so the user never sees NVDA data for a different stock
-    clearForNewSymbol(symbol);
+    if (symbol !== 'NVDA') {
+      if (sname) sname.textContent = symbol;
+      if (scat)  scat.textContent  = '—';
+      clearForNewSymbol(symbol);
+    }
 
-    // Show banner
+    // Add banner
     const header = document.querySelector('.stock-header');
-    if (header) {
+    if (header && !document.getElementById('thesis-banner')) {
       const banner = document.createElement('div');
       banner.id = 'thesis-banner';
-      banner.style.cssText = 'background:rgba(82,0,255,0.12);border:1px solid #5200ff;border-radius:8px;padding:10px 16px;margin:12px 40px 0;font-size:12px;color:#949494;font-family:var(--font-m);letter-spacing:0.5px';
-      banner.innerHTML = `<span style="color:#5200ff;font-weight:600">${symbol}</span> — New thesis. Fill in each section with your research for ${symbol}.`;
+      banner.style.cssText = 'background:rgba(82,0,255,0.10);border:1px solid #5200ff;border-radius:8px;padding:10px 16px;margin:12px 40px 0;font-size:12px;color:#949494;font-family:var(--font-m);letter-spacing:0.5px';
+      banner.innerHTML = `<span style="color:#5200ff;font-weight:600">${symbol}</span> — Checking for cached thesis…`;
       header.insertAdjacentElement('afterend', banner);
     }
 
-    // Fetch from API — fills in KPIs if symbol is in the database
+    // 1. Try cached thesis
     try {
-      const resp = await fetch(`https://stock10x.vercel.app/api/stock/${symbol}`);
-      if (!resp.ok) return; // unknown symbol — clearForNewSymbol already blanked content
-      const d = await resp.json();
-
-      if (sticker) sticker.textContent = d.symbol;
-      if (sname)   sname.textContent = d.name || d.symbol;
-
-      const kpis = document.querySelectorAll('.kpi');
-      if (kpis[0]) kpis[0].querySelector('.kpi-v').textContent = d.currentPrice ? '$' + d.currentPrice.toLocaleString() : '—';
-      if (kpis[1]) kpis[1].querySelector('.kpi-v').textContent = d.priceTarget2030 ? '$' + d.priceTarget2030.toLocaleString() : '—';
-      if (kpis[2]) kpis[2].querySelector('.kpi-v').textContent = d.upsidePercent || '—';
-      const analystKpi = kpis[4] ? kpis[4].querySelector('.kpi-v') : null;
-      if (analystKpi && d.action) analystKpi.textContent = d.action;
-
-      const banner = document.getElementById('thesis-banner');
-      if (banner) {
-        banner.innerHTML = `<span style="color:#3cffd0;font-weight:600">${d.symbol}</span> — ${d.name}. Price: <strong>$${d.currentPrice}</strong> · Target 2030: <strong style="color:#3cffd0">$${d.priceTarget2030}</strong> · ${d.action}. Fill in the research sections below.`;
+      const resp = await fetch(`${API}/api/thesis/${symbol}`);
+      if (resp.ok) {
+        const data = await resp.json();
+        populateThesis(data);
+        return;
       }
-    } catch(e) {}
+    } catch (_) {}
+
+    // 2. No cache — show Generate button
+    const banner = document.getElementById('thesis-banner');
+    if (banner) {
+      banner.style.background = 'rgba(82,0,255,0.10)';
+      banner.style.borderColor = '#5200ff';
+      banner.innerHTML = `<span style="color:#5200ff;font-weight:600">${symbol}</span> — No thesis found. &nbsp;<button onclick="generateThesis('${symbol}')" style="background:#3cffd0;border:none;color:#000;font-family:'JetBrains Mono',monospace;font-size:10px;font-weight:600;letter-spacing:1.2px;text-transform:uppercase;padding:6px 16px;border-radius:20px;cursor:pointer">Generate AI Thesis</button> &nbsp;<span style="font-size:10px;color:#3a3a3a">~2 seconds</span>`;
+    }
   })();
 </script>
 </body>
