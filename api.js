@@ -21,7 +21,7 @@ if (process.env.SUPABASE_URL && process.env.SUPABASE_ANON_KEY) {
 // Yahoo Finance client — lazy-initialized per request to avoid serverless cold-start issues
 function getYF() {
   const { default: YF } = require('yahoo-finance2')
-  return new YF({ suppressNotices: ['yahooSurvey'] })
+  return new YF({ suppressNotices: ['yahooSurvey', 'ripHistorical'] })
 }
 
 const MOCK_STOCKS = {
@@ -82,11 +82,14 @@ app.post('/api/stocks', async (req, res) => {
 async function fetchYahooData(symbol) {
   const yf = getYF()
 
-  const [quote, summaryData] = await Promise.all([
+  const ytdStart = new Date(new Date().getFullYear(), 0, 2)
+
+  const [quote, summaryData, ytdHistory] = await Promise.all([
     yf.quote(symbol),
     yf.quoteSummary(symbol, {
       modules: ['assetProfile', 'financialData', 'defaultKeyStatistics', 'incomeStatementHistory', 'recommendationTrend']
-    }).catch(() => ({}))
+    }).catch(() => ({})),
+    yf.historical(symbol, { period1: ytdStart, period2: new Date(), interval: '1wk' }).catch(() => []),
   ])
 
   const assetProfile    = summaryData.assetProfile             || {}
@@ -100,9 +103,10 @@ async function fetchYahooData(symbol) {
   const mcapB      = Math.round(mcapRaw / 1e8) / 10
   const sharesM    = Math.round(sharesRaw / 1e6)
 
-  const prevClose  = quote.regularMarketPreviousClose || price
-  const ytdPct     = price && prevClose ? Math.round(((price - prevClose) / prevClose) * 100) : 0
-  const ytdGain    = (ytdPct >= 0 ? '+' : '') + ytdPct + '%'
+  // Real YTD: first trading day of the year vs now
+  const ytdOpen = ytdHistory.length > 0 ? ytdHistory[0].close : null
+  const ytdPct  = ytdOpen ? Math.round(((price - ytdOpen) / ytdOpen) * 100) : 0
+  const ytdGain = (ytdPct >= 0 ? '+' : '') + ytdPct + '%'
 
   const analystMean  = financialData.targetMeanPrice   || 0
   const analystLow   = financialData.targetLowPrice    || 0
@@ -124,7 +128,7 @@ async function fetchYahooData(symbol) {
   const grossMargin   = financialData.grossMargins  || 0.50
   const latestRevM    = revHistory.length > 0
     ? revHistory[revHistory.length - 1].value
-    : Math.round((financialData.totalRevenue || 100e6) / 1e6)
+    : Math.round((financialData.totalRevenue || 0) / 1e6)
 
   const growthFwd = Math.min(Math.max(revenueGrowth, 0.10), 1.50)
   const rev2026E  = Math.round(latestRevM * (1 + growthFwd))
@@ -133,10 +137,20 @@ async function fetchYahooData(symbol) {
   const rev2029E  = Math.round(rev2028E   * (1 + growthFwd * 0.65))
   const rev2030E  = Math.round(rev2029E   * (1 + growthFwd * 0.55))
 
-  const peersEVRev     = grossMargin > 0.70 ? 15 : grossMargin > 0.50 ? 10 : 6
-  const baseTarget2030 = analystMean > 0
-    ? Math.round(analystMean * 2.5)
-    : Math.round((rev2030E * peersEVRev * 1e6) / (sharesRaw || 1))
+  const peersEVRev = grossMargin > 0.70 ? 15 : grossMargin > 0.50 ? 10 : 6
+
+  // Fix: pre-revenue companies (latestRevM < 2) → use analyst high or price-based multiple
+  let baseTarget2030
+  if (analystMean > 0 && latestRevM >= 2) {
+    baseTarget2030 = Math.round(analystMean * 2.5)
+  } else if (analystHigh > 0) {
+    baseTarget2030 = Math.round(analystHigh * (grossMargin > 0.80 ? 3 : 2))
+  } else if (rev2030E > 0) {
+    baseTarget2030 = Math.round((rev2030E * peersEVRev * 1e6) / (sharesRaw || 1))
+  } else {
+    // True pre-revenue: price-to-market-cap speculative target
+    baseTarget2030 = Math.round(price * (grossMargin > 0.80 ? 4 : 3))
+  }
 
   const bullPrice  = Math.round(baseTarget2030 * 1.6)
   const bearPrice  = Math.round(price * 0.55)
@@ -173,7 +187,7 @@ async function fetchYahooData(symbol) {
     industry,
     currentPrice:       price,
     priceTarget2030:    basePrice,
-    analystPriceTarget: analystMean || Math.round(price * 1.3),
+    analystPriceTarget: analystMean || null,
     upsidePercent:      (baseReturn >= 0 ? '+' : '') + baseReturn + '%',
     action,
     ytdGain,
@@ -275,12 +289,52 @@ async function fetchYahooData(symbol) {
       ],
     },
 
-    keyPlayers: [
-      { name: 'CEO / Founder',            role: 'Chief Executive Officer', note: 'Leads strategic vision, product direction, and investor relations. Founder-led management strongly preferred for long-term compounding.' },
-      { name: 'CTO / Chief Architect',    role: 'Chief Technology Officer', note: 'Owns the proprietary platform and technical roadmap. Key person — departure would be a significant negative signal.' },
-      { name: 'Chief Financial Officer',  role: 'CFO', note: 'Manages capital allocation, investor narrative, and path to profitability. Experience in growth-stage capital markets is critical.' },
-      { name: 'Lead Independent Director', role: 'Board Member', note: `Brings external governance, network, and accountability. Ideally has operator or investor background in ${sector}.` },
-    ],
+    keyPlayers: (() => {
+      const officers = assetProfile.companyOfficers || []
+      const ROLE_NOTES = {
+        ceo: 'Leads strategic vision, product direction, and investor relations. Founder-led management strongly preferred for long-term compounding.',
+        cto: 'Owns the proprietary platform and technical roadmap. Key person — departure would be a significant negative signal.',
+        cfo: 'Manages capital allocation, investor narrative, and path to profitability.',
+        president: 'Day-to-day operations and go-to-market execution.',
+        coo: 'Operational efficiency and scale. Key lever for margin expansion as the business grows.',
+      }
+      function roleKey(title) {
+        const t = (title || '').toLowerCase()
+        if (t.includes('chief executive') || t.includes('ceo')) return 'ceo'
+        if (t.includes('president') && !t.includes('vice')) return 'president'
+        if (t.includes('chief technology') || t.includes('cto')) return 'cto'
+        if (t.includes('chief financial') || (t.includes('cfo') && !t.includes('principal financial'))) return 'cfo'
+        if (t.includes('chief operating') || t.includes('coo')) return 'coo'
+        return null
+      }
+      const PRIORITY_KEYS = ['ceo', 'president', 'cto', 'cfo', 'coo']
+      const seen = new Set()
+      const result = []
+      // First pass: priority roles
+      for (const key of PRIORITY_KEYS) {
+        const officer = officers.find(o => roleKey(o.title) === key)
+        if (officer && !seen.has(officer.name)) {
+          seen.add(officer.name)
+          result.push({ name: officer.name, role: officer.title, note: ROLE_NOTES[key], age: officer.age, fiscalYearPay: officer.totalPay ? `$${Math.round(officer.totalPay / 1000)}K` : undefined })
+        }
+        if (result.length >= 4) break
+      }
+      // Second pass: remaining unique officers
+      for (const o of officers) {
+        if (result.length >= 4) break
+        if (!seen.has(o.name)) {
+          seen.add(o.name)
+          result.push({ name: o.name, role: o.title, note: `${o.title} responsible for ${symbol}'s ${sector} operations.`, age: o.age })
+        }
+      }
+      if (result.length === 0) {
+        return [
+          { name: 'CEO', role: 'Chief Executive Officer', note: 'Leads strategic vision and investor relations.' },
+          { name: 'CFO', role: 'Chief Financial Officer', note: 'Manages capital allocation and path to profitability.' },
+        ]
+      }
+      return result
+    })(),
 
     scenarios: {
       bull: {
