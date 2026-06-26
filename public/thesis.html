@@ -341,6 +341,15 @@
     .upside-labels { display: flex; justify-content: space-between; margin-top: 4px; }
     .upside-labels span { font-family: var(--font-m); font-size: 9px; color: var(--muted); }
 
+    /* VALUATION CHART */
+    .vc-legend { display: flex; gap: 20px; flex-wrap: wrap; margin-bottom: 14px; }
+    .vc-model { display: flex; align-items: center; gap: 10px; }
+    .vc-model-label { font-family: var(--font-m); font-size: 9px; letter-spacing: 1.2px; text-transform: uppercase; color: var(--muted); min-width: 68px; }
+    .vc-scen { display: flex; align-items: center; gap: 4px; }
+    .vc-scen-line { width: 20px; height: 2px; border-radius: 1px; display: inline-block; }
+    .vc-scen-label { font-family: var(--font-m); font-size: 9px; }
+    html.light .vc-model-label { color: #6b7280; }
+
     @media (max-width: 900px) {
       .stock-header { padding: 20px 16px 16px; }
       .scenario-strip { padding: 12px 16px; }
@@ -501,29 +510,30 @@
       </div>
     </div>
 
-    <div class="section-title">Price / Upside Visualization</div>
-    <div class="card" style="margin-bottom:24px">
-      <div style="display:flex;gap:24px;align-items:center;flex-wrap:wrap;margin-bottom:16px">
-        <div>
-          <div style="font-size:11px;color:var(--muted);margin-bottom:2px">Current</div>
-          <div style="font-family:var(--font-m);font-size:18px;font-weight:600">$875</div>
+    <div class="section-title" data-en="Valuation Model Chart" data-th="กราฟโมเดลประเมินราคา 2026–2030">Valuation Model Chart</div>
+    <div class="card" id="val-chart-card" style="margin-bottom:24px;padding:20px 16px 16px">
+      <div class="vc-legend">
+        <div class="vc-model">
+          <span class="vc-model-label">DCF</span>
+          <div class="vc-scen"><span class="vc-scen-line" style="background:#3cffd0"></span><span class="vc-scen-label" style="color:#3cffd0">Bull</span></div>
+          <div class="vc-scen"><span class="vc-scen-line" style="background:#22c55e"></span><span class="vc-scen-label" style="color:#22c55e">Base</span></div>
+          <div class="vc-scen"><span class="vc-scen-line" style="background:#ef4444;opacity:0.8"></span><span class="vc-scen-label" style="color:#ef4444">Bear</span></div>
         </div>
-        <div style="flex:1;min-width:200px">
-          <div style="position:relative;height:12px;background:var(--s3);border-radius:6px;margin-bottom:6px">
-            <div style="position:absolute;left:0;top:0;height:100%;width:40%;background:linear-gradient(90deg,#ef4444,#f59e0b);border-radius:6px;opacity:0.7"></div>
-            <div style="position:absolute;left:40%;top:0;height:100%;width:30%;background:linear-gradient(90deg,#f59e0b,#22c55e);border-radius:0;opacity:0.7"></div>
-            <div style="position:absolute;left:70%;top:0;height:100%;width:30%;background:linear-gradient(90deg,#22c55e,#3cffd0);border-radius:0 6px 6px 0;opacity:0.7"></div>
-            <!-- Current price marker -->
-            <div style="position:absolute;left:37%;top:-4px;width:3px;height:20px;background:#fff;border-radius:1px"></div>
-          </div>
-          <div style="display:flex;justify-content:space-between;font-family:var(--font-m);font-size:9px;color:var(--muted)">
-            <span>$600 Bear</span><span>$875 Now</span><span>$1,400 Base</span><span>$2,200 Bull</span>
-          </div>
+        <div class="vc-model">
+          <span class="vc-model-label">2030 PE</span>
+          <div class="vc-scen"><span class="vc-scen-line" style="background:#a78bfa"></span><span class="vc-scen-label" style="color:#a78bfa">Bull</span></div>
+          <div class="vc-scen"><span class="vc-scen-line" style="background:#7c3aed"></span><span class="vc-scen-label" style="color:#7c3aed">Base</span></div>
+          <div class="vc-scen"><span class="vc-scen-line" style="background:#6366f1;opacity:0.8"></span><span class="vc-scen-label" style="color:#6366f1">Bear</span></div>
         </div>
-        <div>
-          <div style="font-size:11px;color:var(--muted);margin-bottom:2px">Base Target</div>
-          <div style="font-family:var(--font-m);font-size:18px;font-weight:600;color:var(--accent)">$1,400</div>
+        <div class="vc-model">
+          <span class="vc-model-label">Current PE</span>
+          <div class="vc-scen"><span class="vc-scen-line" style="background:#fbbf24"></span><span class="vc-scen-label" style="color:#fbbf24">Bull</span></div>
+          <div class="vc-scen"><span class="vc-scen-line" style="background:#f59e0b"></span><span class="vc-scen-label" style="color:#f59e0b">Base</span></div>
+          <div class="vc-scen"><span class="vc-scen-line" style="background:#d97706;opacity:0.8"></span><span class="vc-scen-label" style="color:#d97706">Bear</span></div>
         </div>
+      </div>
+      <div style="overflow-x:auto">
+        <svg id="val-chart-svg" viewBox="0 0 640 260" width="100%" style="display:block;min-width:300px;overflow:visible"></svg>
       </div>
     </div>
 
@@ -1097,14 +1107,9 @@
       if (st) st.textContent = '— · —% prob';
     });
 
-    // Price bar range labels
-    document.querySelectorAll('#panel-overview [style*="justify-content:space-between"] span').forEach(s => {
-      if (/\$\d/.test(s.textContent)) s.textContent = 'TBD';
-    });
-    // Current / Base Target values in overview
-    document.querySelectorAll('#panel-overview [style*="font-size:18px"]').forEach(el => {
-      el.textContent = '—';
-    });
+    // Clear valuation chart
+    const vcSvg = document.getElementById('val-chart-svg');
+    if (vcSvg) vcSvg.innerHTML = '';
 
     // Fundamentals — revenue bar labels + widths
     const fundPanel = document.getElementById('panel-fundamentals');
@@ -1195,6 +1200,104 @@
     return { solid, dashed, pts };
   }
 
+  /* ── Valuation line chart: 3 models × 3 scenarios, 2026→2030 ── */
+  function renderValuationChart(d) {
+    const svg = document.getElementById('val-chart-svg');
+    if (!svg) return;
+    svg.innerHTML = '';
+
+    const W = 640, H = 260, mL = 70, mR = 50, mT = 22, mB = 42;
+    const pW = W - mL - mR, pH = H - mT - mB;
+    const NS = 'http://www.w3.org/2000/svg';
+
+    const cp  = d.currentPrice || 875;
+    const sc  = d.scenarios || { bull: { price: 2200 }, base: { price: 1400 }, bear: { price: 600 } };
+    const bul = sc.bull?.price || 2200, bas = sc.base?.price || 1400, ber = sc.bear?.price || 600;
+
+    const models = [
+      { label: 'DCF',        bull: bul,                    base: bas,                    bear: ber,
+        cBull: '#3cffd0', cBase: '#22c55e', cBear: '#ef4444' },
+      { label: '2030 PE',   bull: Math.round(bul * 0.92), base: Math.round(bas * 0.95), bear: Math.round(ber * 1.1),
+        cBull: '#a78bfa', cBase: '#7c3aed', cBear: '#6366f1' },
+      { label: 'Current PE', bull: Math.round(bul * 0.82), base: Math.round(bas * 0.85), bear: Math.round(ber * 1.15),
+        cBull: '#fbbf24', cBase: '#f59e0b', cBear: '#d97706' }
+    ];
+
+    const allP = [cp, ...models.flatMap(m => [m.bull, m.base, m.bear])];
+    const minY = Math.min(...allP) * 0.88;
+    const maxY = Math.max(...allP) * 1.08;
+    const years = [2026, 2027, 2028, 2029, 2030];
+
+    const xPos = i => mL + (i / (years.length - 1)) * pW;
+    const yPos = v => mT + pH - ((v - minY) / (maxY - minY)) * pH;
+
+    const mk = (tag, attrs, txt) => {
+      const e = document.createElementNS(NS, tag);
+      if (attrs) Object.entries(attrs).forEach(([k, v]) => e.setAttribute(k, v));
+      if (txt !== undefined) e.textContent = txt;
+      return e;
+    };
+
+    // Horizontal grid lines
+    const range = maxY - minY;
+    const raw = range / 5;
+    const mag = Math.pow(10, Math.floor(Math.log10(raw)));
+    const step = Math.ceil(raw / mag) * mag;
+    const gStart = Math.ceil(minY / step) * step;
+    for (let p = gStart; p <= maxY; p += step) {
+      const y = yPos(p);
+      svg.appendChild(mk('line', { x1: mL, y1: y, x2: W - mR, y2: y, stroke: '#2a2a2a', 'stroke-width': 0.8 }));
+      const lbl = p >= 1000 ? `$${(p / 1000).toFixed(p % 1000 === 0 ? 0 : 1)}k` : `$${Math.round(p)}`;
+      svg.appendChild(mk('text', { x: mL - 6, y: y + 3.5, fill: '#666', 'font-family': 'monospace', 'font-size': 9, 'text-anchor': 'end' }, lbl));
+    }
+
+    // 9 paths (compound growth curves)
+    const compPath = target => years.map((_, i) => {
+      const t = i / (years.length - 1);
+      const price = cp * Math.pow(Math.max(target / cp, 0.001), t);
+      return `${i === 0 ? 'M' : 'L'}${xPos(i).toFixed(1)},${yPos(price).toFixed(1)}`;
+    }).join(' ');
+
+    models.forEach(m => {
+      [
+        { t: m.bull, c: m.cBull, w: 2,   dash: null },
+        { t: m.base, c: m.cBase, w: 1.5, dash: null },
+        { t: m.bear, c: m.cBear, w: 1.5, dash: '5,3' }
+      ].forEach(s => {
+        const attrs = { d: compPath(s.t), stroke: s.c, 'stroke-width': s.w, fill: 'none', 'stroke-linecap': 'round', 'stroke-linejoin': 'round' };
+        if (s.dash) attrs['stroke-dasharray'] = s.dash;
+        svg.appendChild(mk('path', attrs));
+        // End dot + price label
+        const ex = xPos(years.length - 1), ey = yPos(s.t);
+        svg.appendChild(mk('circle', { cx: ex, cy: ey, r: 3, fill: s.c }));
+        const priceStr = s.t >= 1000 ? `$${(s.t / 1000).toFixed(1)}k` : `$${s.t}`;
+        svg.appendChild(mk('text', { x: ex + 5, y: ey + 3.5, fill: s.c, 'font-family': 'monospace', 'font-size': 8, 'text-anchor': 'start' }, priceStr));
+      });
+    });
+
+    // NOW vertical marker
+    const x0 = xPos(0);
+    svg.appendChild(mk('line', { x1: x0, y1: mT, x2: x0, y2: H - mB, stroke: '#ffffff', 'stroke-width': 1, 'stroke-dasharray': '3 2', opacity: 0.25 }));
+
+    // Current price dot + label
+    const cy = yPos(cp);
+    svg.appendChild(mk('circle', { cx: x0, cy: cy, r: 5, fill: '#fff', stroke: '#3cffd0', 'stroke-width': 1.5 }));
+    const cpStr = cp >= 1000 ? `$${(cp / 1000).toFixed(2)}k` : `$${cp}`;
+    svg.appendChild(mk('text', { x: x0 + 8, y: cy - 6, fill: '#fff', 'font-family': 'monospace', 'font-size': 9 }, `NOW ${cpStr}`));
+
+    // X axis baseline + year labels
+    svg.appendChild(mk('line', { x1: mL, y1: H - mB, x2: W - mR, y2: H - mB, stroke: '#333', 'stroke-width': 1 }));
+    years.forEach((yr, i) => {
+      const x = xPos(i);
+      svg.appendChild(mk('line', { x1: x, y1: H - mB, x2: x, y2: H - mB + 4, stroke: '#444', 'stroke-width': 1 }));
+      svg.appendChild(mk('text', { x, y: H - mB + 14, fill: '#666', 'font-family': 'monospace', 'font-size': 9, 'text-anchor': 'middle' }, yr.toString()));
+    });
+
+    // Y axis label
+    const ymid = mT + pH / 2;
+    svg.appendChild(mk('text', { x: 11, y: ymid, fill: '#555', 'font-family': 'monospace', 'font-size': 8, 'text-anchor': 'middle', transform: `rotate(-90,11,${ymid})` }, 'Price (USD)'));
+  }
+
   /* ── Populate thesis sections from API data ── */
   function populateThesis(d) {
     // Header
@@ -1227,14 +1330,8 @@
       if (st) st.textContent = `${s.return} · ${s.prob}% prob`;
     });
 
-    // Price bar labels in overview
-    document.querySelectorAll('#panel-overview [style*="justify-content:space-between"] span').forEach((el, i) => {
-      if (i === 0 && sc.bear) el.textContent = `$${sc.bear.price}`;
-      if (i === 1 && sc.bull) el.textContent = `$${sc.bull.price}`;
-    });
-    const overviewPrices = document.querySelectorAll('#panel-overview [style*="font-size:18px"]');
-    if (overviewPrices[0] && d.currentPrice)    overviewPrices[0].textContent = `$${d.currentPrice}`;
-    if (overviewPrices[1] && d.priceTarget2030)  overviewPrices[1].textContent = `$${d.priceTarget2030}`;
+    // Valuation line chart
+    renderValuationChart(d);
 
     // Overview narrative
     const narr = document.querySelector('.narrative-block p');
@@ -1481,6 +1578,9 @@
       if (sname) sname.textContent = symbol;
       if (scat)  scat.textContent  = '—';
       clearForNewSymbol(symbol);
+    } else {
+      // Render NVDA default chart immediately
+      renderValuationChart({ currentPrice: 875, scenarios: { bull: { price: 2200 }, base: { price: 1400 }, bear: { price: 600 } } });
     }
 
     // Add banner
