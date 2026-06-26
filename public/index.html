@@ -81,46 +81,125 @@
       nav { padding: 0 16px; }
       main { padding: 40px 16px; }
     }
+
+    /* LIGHT MODE */
+    html.light {
+      --bg: #f4f5f7;
+      --surface: #ffffff;
+      --s2: #eaecef;
+      --fg: #131313;
+      --muted: #5a5a5a;
+      --border: #d4d8de;
+    }
+    html.light nav {
+      background: rgba(244,245,247,0.96) !important;
+    }
+    html.light .modal {
+      background: #ffffff;
+    }
+    html.light .summary-stats {
+      background: #eaecef;
+      border-color: #d4d8de;
+    }
+    html.light .stock-row:hover {
+      background: rgba(0,0,0,0.03);
+    }
+
+    /* TOGGLE BUTTONS */
+    .ctrl-toggle {
+      font-family: var(--font-m); font-size: 9px; font-weight: 600;
+      letter-spacing: 1.2px; background: transparent;
+      border: 1px solid var(--border); border-radius: 20px;
+      padding: 5px 12px; cursor: pointer; color: var(--muted);
+      transition: all 150ms;
+    }
+    .ctrl-toggle:hover { border-color: var(--accent); color: var(--accent); }
+    .ctrl-toggle.active { border-color: var(--accent); color: var(--accent); background: rgba(60,255,208,0.08); }
   </style>
 </head>
 <body>
 <nav>
   <a href="index.html" class="nav-logo">STOCK<span>10X</span></a>
+  <div style="display:flex;align-items:center;gap:8px">
+    <button class="ctrl-toggle" id="langToggle" onclick="toggleLang()">TH</button>
+    <button class="ctrl-toggle" id="themeToggle" onclick="toggleTheme()">☀</button>
+  </div>
 </nav>
 <main>
-  <div class="platform-badge">Conviction Investing Platform</div>
+  <div class="platform-badge" data-en="Conviction Investing Platform" data-th="แพลตฟอร์มลงทุนอย่างมั่นใจ">Conviction Investing Platform</div>
   <h1>STOCK<span>10X</span></h1>
-  <p class="subtitle">Find, research, and build conviction on your next 10x opportunity. Three surfaces, one system.</p>
+  <p class="subtitle" data-en="Find, research, and build conviction on your next 10x opportunity. Three surfaces, one system." data-th="ค้นหา วิจัย และสร้างความมั่นใจในหุ้นโอกาส 10x ถัดไปของคุณ สามหน้าจอ ระบบเดียว">Find, research, and build conviction on your next 10x opportunity. Three surfaces, one system.</p>
 
   <div class="screens">
     <a href="landing.html" class="screen-card">
       <div class="sc-num">01</div>
       <div>
-        <div class="sc-tag">Page 01 · Marketing</div>
-        <div class="sc-title">Platform Hero</div>
+        <div class="sc-tag" data-en="Page 01 · Marketing" data-th="หน้า 01 · การตลาด">Page 01 · Marketing</div>
+        <div class="sc-title" data-en="Platform Hero" data-th="หน้าหลักแพลตฟอร์ม">Platform Hero</div>
       </div>
-      <div class="sc-desc">What Stock10x is and why it exists. Hero visual, platform narrative, and key metrics.</div>
+      <div class="sc-desc" data-en="What Stock10x is and why it exists. Hero visual, platform narrative, and key metrics." data-th="Stock10x คืออะไรและมีไว้เพื่ออะไร ภาพหลัก เรื่องราวแพลตฟอร์ม และตัวชี้วัดสำคัญ">What Stock10x is and why it exists. Hero visual, platform narrative, and key metrics.</div>
       <div class="sc-arrow">landing.html →</div>
     </a>
     <a href="dashboard.html" class="screen-card">
       <div class="sc-num">02</div>
       <div>
-        <div class="sc-tag">Page 02 · Dashboard</div>
-        <div class="sc-title">Watchlist Overview</div>
+        <div class="sc-tag" data-en="Page 02 · Dashboard" data-th="หน้า 02 · แดชบอร์ด">Page 02 · Dashboard</div>
+        <div class="sc-title" data-en="Watchlist Overview" data-th="ภาพรวม Watchlist">Watchlist Overview</div>
       </div>
-      <div class="sc-desc">All tracked stocks in one row each. Sparkline chart, upside %, time horizon, and bull probability at a glance.</div>
+      <div class="sc-desc" data-en="All tracked stocks in one row each. Sparkline chart, upside %, time horizon, and bull probability at a glance." data-th="หุ้นที่ติดตามทั้งหมดในแถวเดียวกัน กราฟ Sparkline โอกาสเพิ่มขึ้น % ระยะเวลา และโอกาสขึ้นแบบรวดเร็ว">All tracked stocks in one row each. Sparkline chart, upside %, time horizon, and bull probability at a glance.</div>
       <div class="sc-arrow">dashboard.html →</div>
     </a>
     <a href="thesis.html" class="screen-card">
       <div class="sc-num">03</div>
       <div>
-        <div class="sc-tag">Page 03 · Thesis Builder</div>
-        <div class="sc-title">Deep Thesis — NVDA</div>
+        <div class="sc-tag" data-en="Page 03 · Thesis Builder" data-th="หน้า 03 · สร้าง Thesis">Page 03 · Thesis Builder</div>
+        <div class="sc-title" data-en="Deep Thesis — NVDA" data-th="Thesis เชิงลึก — NVDA">Deep Thesis — NVDA</div>
       </div>
-      <div class="sc-desc">Full research stack: 7 Powers, SWOT, TAM, key players, financials, valuation, and Bull/Base/Bear scenarios.</div>
+      <div class="sc-desc" data-en="Full research stack: 7 Powers, SWOT, TAM, key players, financials, valuation, and Bull/Base/Bear scenarios." data-th="ชุดวิจัยครบถ้วน: 7 จุดแข็ง, SWOT, TAM, ผู้เล่นหลัก, การเงิน, มูลค่า และสถานการณ์ดีสุด/ปกติ/แย่สุด">Full research stack: 7 Powers, SWOT, TAM, key players, financials, valuation, and Bull/Base/Bear scenarios.</div>
       <div class="sc-arrow">thesis.html →</div>
     </a>
   </div>
 </main>
+
+<script>
+  /* ── THEME + LANGUAGE TOGGLE ── */
+  (function() {
+    const savedTheme = localStorage.getItem('s10x-theme') || 'dark';
+    const savedLang  = localStorage.getItem('s10x-lang')  || 'en';
+    if (savedTheme === 'light') document.documentElement.classList.add('light');
+    applyLang(savedLang);
+    setTimeout(() => {
+      const themeBtn = document.getElementById('themeToggle');
+      const langBtn  = document.getElementById('langToggle');
+      if (themeBtn) themeBtn.textContent = savedTheme === 'light' ? '☾' : '☀';
+      if (langBtn)  langBtn.textContent  = savedLang  === 'th'    ? 'EN' : 'TH';
+    }, 0);
+  })();
+
+  function toggleTheme() {
+    const isLight = document.documentElement.classList.toggle('light');
+    localStorage.setItem('s10x-theme', isLight ? 'light' : 'dark');
+    const btn = document.getElementById('themeToggle');
+    if (btn) btn.textContent = isLight ? '☾' : '☀';
+  }
+
+  function toggleLang() {
+    const cur  = localStorage.getItem('s10x-lang') || 'en';
+    const next = cur === 'en' ? 'th' : 'en';
+    localStorage.setItem('s10x-lang', next);
+    applyLang(next);
+    const btn = document.getElementById('langToggle');
+    if (btn) btn.textContent = next === 'th' ? 'EN' : 'TH';
+  }
+
+  function applyLang(lang) {
+    document.querySelectorAll('[data-en]').forEach(el => {
+      const val = lang === 'th' ? (el.dataset.th || el.dataset.en) : el.dataset.en;
+      if (val !== undefined) el.textContent = val;
+    });
+    document.documentElement.lang = lang === 'th' ? 'th' : 'en';
+  }
+</script>
+
 </body>
 </html>

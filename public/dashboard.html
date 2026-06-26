@@ -324,6 +324,40 @@
       transition: color 150ms;
     }
 
+    /* LIGHT MODE */
+    html.light {
+      --bg: #f4f5f7;
+      --surface: #ffffff;
+      --s2: #eaecef;
+      --fg: #131313;
+      --muted: #5a5a5a;
+      --border: #d4d8de;
+    }
+    html.light nav {
+      background: rgba(244,245,247,0.96) !important;
+    }
+    html.light .modal {
+      background: #ffffff;
+    }
+    html.light .summary-stats {
+      background: #eaecef;
+      border-color: #d4d8de;
+    }
+    html.light .stock-row:hover {
+      background: rgba(0,0,0,0.03);
+    }
+
+    /* TOGGLE BUTTONS */
+    .ctrl-toggle {
+      font-family: var(--font-m); font-size: 9px; font-weight: 600;
+      letter-spacing: 1.2px; background: transparent;
+      border: 1px solid var(--border); border-radius: 20px;
+      padding: 5px 12px; cursor: pointer; color: var(--muted);
+      transition: all 150ms;
+    }
+    .ctrl-toggle:hover { border-color: var(--accent); color: var(--accent); }
+    .ctrl-toggle.active { border-color: var(--accent); color: var(--accent); background: rgba(60,255,208,0.08); }
+
     /* Responsive */
     @media (max-width: 1300px) {
       .tbl-head, .stock-row {
@@ -364,22 +398,26 @@
     <li><a href="thesis.html">Thesis Builder</a></li>
   </ul>
   <button class="btn-nav" onclick="openModal()">+ Add Stock</button>
+  <div style="display:flex;align-items:center;gap:8px">
+    <button class="ctrl-toggle" id="langToggle" onclick="toggleLang()">TH</button>
+    <button class="ctrl-toggle" id="themeToggle" onclick="toggleTheme()">☀</button>
+  </div>
 </nav>
 
 <main>
   <div class="page-header">
     <h2>
-      <small>My Watchlist</small>
+      <small data-en="MY WATCHLIST" data-th="รายการหุ้นของฉัน">MY WATCHLIST</small>
       10x Candidates
     </h2>
     <div class="header-actions">
       <div class="filters" style="margin:0">
         <span class="filter-label">Filter</span>
-        <button class="fpill on" onclick="setFilter(this,'all')">All</button>
-        <button class="fpill" onclick="setFilter(this,'ai')">AI / Semis</button>
-        <button class="fpill" onclick="setFilter(this,'cloud')">Cloud</button>
-        <button class="fpill" onclick="setFilter(this,'ev')">EV / Mobility</button>
-        <button class="fpill" onclick="setFilter(this,'social')">Social</button>
+        <button class="fpill on" onclick="setFilter(this,'all')" data-en="All" data-th="ทั้งหมด">All</button>
+        <button class="fpill" onclick="setFilter(this,'ai')" data-en="AI / Semis" data-th="AI / ชิป">AI / Semis</button>
+        <button class="fpill" onclick="setFilter(this,'cloud')" data-en="Cloud" data-th="คลาวด์">Cloud</button>
+        <button class="fpill" onclick="setFilter(this,'ev')" data-en="EV / Mobility" data-th="EV / ยานยนต์">EV / Mobility</button>
+        <button class="fpill" onclick="setFilter(this,'social')" data-en="Social" data-th="โซเชียล">Social</button>
       </div>
     </div>
   </div>
@@ -388,39 +426,39 @@
   <div class="summary-stats">
     <div class="stat">
       <div class="stat-val accent">6</div>
-      <div class="stat-lbl">Positions Tracked</div>
+      <div class="stat-lbl" data-en="Positions Tracked" data-th="จำนวนหุ้นที่ติดตาม">Positions Tracked</div>
     </div>
     <div class="stat">
       <div class="stat-val green">+58.9%</div>
-      <div class="stat-lbl">Avg Upside</div>
+      <div class="stat-lbl" data-en="Avg Upside" data-th="โอกาสเพิ่มขึ้นเฉลี่ย">Avg Upside</div>
     </div>
     <div class="stat">
       <div class="stat-val">72%</div>
-      <div class="stat-lbl">Avg Bull Probability</div>
+      <div class="stat-lbl" data-en="Avg Bull Probability" data-th="โอกาสขึ้น (เฉลี่ย)">Avg Bull Probability</div>
     </div>
     <div class="stat">
       <div class="stat-val">2028</div>
-      <div class="stat-lbl">Avg Target Year</div>
+      <div class="stat-lbl" data-en="Avg Target Year" data-th="ปีเป้าหมายเฉลี่ย">Avg Target Year</div>
     </div>
     <div class="stat">
       <div class="stat-val accent">2</div>
-      <div class="stat-lbl">100%+ Upside</div>
+      <div class="stat-lbl" data-en="100%+ Upside" data-th="โอกาสเพิ่ม 100%+">100%+ Upside</div>
     </div>
   </div>
 
   <!-- Table header -->
   <div class="tbl-head">
     <span>#</span>
-    <span>Stock</span>
-    <span>Sector</span>
-    <span>1M Price</span>
-    <span>Price / MCap</span>
+    <span data-en="Stock" data-th="หุ้น">Stock</span>
+    <span data-en="Sector" data-th="กลุ่มธุรกิจ">Sector</span>
+    <span data-en="1M Price" data-th="ราคา 1 เดือน">1M Price</span>
+    <span data-en="Price / MCap" data-th="ราคา / มูลค่าตลาด">Price / MCap</span>
     <span>YTD</span>
     <span>→2030</span>
-    <span>Upside</span>
-    <span>Target</span>
-    <span>Analyst</span>
-    <span>Probability</span>
+    <span data-en="Upside" data-th="โอกาสเพิ่มขึ้น">Upside</span>
+    <span data-en="Target" data-th="เป้าหมาย">Target</span>
+    <span data-en="Analyst" data-th="นักวิเคราะห์">Analyst</span>
+    <span data-en="Probability" data-th="โอกาส">Probability</span>
     <span></span>
     <span></span>
   </div>
@@ -456,9 +494,9 @@
     <div class="prob-wrap">
       <span class="prob-num" style="color:#3cffd0">78%</span>
       <div class="prob-bar"><div class="prob-fill" style="width:78%;background:#3cffd0"></div></div>
-      <span class="prob-lbl">Bull</span>
+      <span class="prob-lbl" data-en="Bull" data-th="กระทิง">Bull</span>
     </div>
-    <a href="thesis.html?symbol=NVDA" class="view-btn">View Thesis →</a>
+    <a href="thesis.html?symbol=NVDA" class="view-btn" data-en="View Thesis →" data-th="ดู Thesis →">View Thesis →</a>
     <button class="del-btn" onclick="deleteRow(this)" title="Remove from watchlist">×</button>
   </div>
 
@@ -493,9 +531,9 @@
     <div class="prob-wrap">
       <span class="prob-num" style="color:#f59e0b">52%</span>
       <div class="prob-bar"><div class="prob-fill" style="width:52%;background:#f59e0b"></div></div>
-      <span class="prob-lbl">Bull</span>
+      <span class="prob-lbl" data-en="Bull" data-th="กระทิง">Bull</span>
     </div>
-    <a href="thesis.html?symbol=TSLA" class="view-btn">View Thesis →</a>
+    <a href="thesis.html?symbol=TSLA" class="view-btn" data-en="View Thesis →" data-th="ดู Thesis →">View Thesis →</a>
     <button class="del-btn" onclick="deleteRow(this)" title="Remove from watchlist">×</button>
   </div>
 
@@ -530,9 +568,9 @@
     <div class="prob-wrap">
       <span class="prob-num" style="color:#22c55e">74%</span>
       <div class="prob-bar"><div class="prob-fill" style="width:74%;background:#22c55e"></div></div>
-      <span class="prob-lbl">Bull</span>
+      <span class="prob-lbl" data-en="Bull" data-th="กระทิง">Bull</span>
     </div>
-    <a href="thesis.html?symbol=META" class="view-btn">View Thesis →</a>
+    <a href="thesis.html?symbol=META" class="view-btn" data-en="View Thesis →" data-th="ดู Thesis →">View Thesis →</a>
     <button class="del-btn" onclick="deleteRow(this)" title="Remove from watchlist">×</button>
   </div>
 
@@ -567,9 +605,9 @@
     <div class="prob-wrap">
       <span class="prob-num" style="color:#22c55e">72%</span>
       <div class="prob-bar"><div class="prob-fill" style="width:72%;background:#22c55e"></div></div>
-      <span class="prob-lbl">Bull</span>
+      <span class="prob-lbl" data-en="Bull" data-th="กระทิง">Bull</span>
     </div>
-    <a href="thesis.html?symbol=AMZN" class="view-btn">View Thesis →</a>
+    <a href="thesis.html?symbol=AMZN" class="view-btn" data-en="View Thesis →" data-th="ดู Thesis →">View Thesis →</a>
     <button class="del-btn" onclick="deleteRow(this)" title="Remove from watchlist">×</button>
   </div>
 
@@ -604,9 +642,9 @@
     <div class="prob-wrap">
       <span class="prob-num" style="color:#3cffd0">85%</span>
       <div class="prob-bar"><div class="prob-fill" style="width:85%;background:#3cffd0"></div></div>
-      <span class="prob-lbl">Bull</span>
+      <span class="prob-lbl" data-en="Bull" data-th="กระทิง">Bull</span>
     </div>
-    <a href="thesis.html?symbol=MSFT" class="view-btn">View Thesis →</a>
+    <a href="thesis.html?symbol=MSFT" class="view-btn" data-en="View Thesis →" data-th="ดู Thesis →">View Thesis →</a>
     <button class="del-btn" onclick="deleteRow(this)" title="Remove from watchlist">×</button>
   </div>
 
@@ -641,16 +679,16 @@
     <div class="prob-wrap">
       <span class="prob-num" style="color:#3cffd0">82%</span>
       <div class="prob-bar"><div class="prob-fill" style="width:82%;background:#3cffd0"></div></div>
-      <span class="prob-lbl">Bull</span>
+      <span class="prob-lbl" data-en="Bull" data-th="กระทิง">Bull</span>
     </div>
-    <a href="thesis.html?symbol=AAPL" class="view-btn">View Thesis →</a>
+    <a href="thesis.html?symbol=AAPL" class="view-btn" data-en="View Thesis →" data-th="ดู Thesis →">View Thesis →</a>
     <button class="del-btn" onclick="deleteRow(this)" title="Remove from watchlist">×</button>
   </div>
 
   <!-- ADD ROW -->
   <button class="add-row" onclick="openModal()">
     <div class="add-icon">+</div>
-    <span class="add-lbl">Add Stock — Build your thesis</span>
+    <span class="add-lbl" data-en="Add Stock — Build your thesis" data-th="เพิ่มหุ้น — สร้าง Thesis ของคุณ">Add Stock — Build your thesis</span>
   </button>
 </main>
 
@@ -658,11 +696,11 @@
 <div class="modal-backdrop" id="addModal" onclick="handleBackdropClick(event)">
   <div class="modal">
     <button class="modal-close" onclick="closeModal()">×</button>
-    <h3>Add to <span>Watchlist</span></h3>
-    <p style="font-size:12px;color:var(--muted);margin-bottom:16px">Enter a US stock ticker. We'll look up price target, upside, and analyst rating automatically.</p>
+    <h3><span data-en="Add to" data-th="เพิ่มใน">Add to</span> <span>Watchlist</span></h3>
+    <p style="font-size:12px;color:var(--muted);margin-bottom:16px" data-en="Enter a US stock ticker. We'll look up price target, upside, and analyst rating automatically." data-th="ใส่สัญลักษณ์หุ้นสหรัฐ เราจะค้นหาราคาเป้าหมาย โอกาสเพิ่มขึ้น และคำแนะนำนักวิเคราะห์โดยอัตโนมัติ">Enter a US stock ticker. We'll look up price target, upside, and analyst rating automatically.</p>
     <div class="form-grid">
       <div class="form-field" style="grid-column:1/-1">
-        <label>Stock Symbol</label>
+        <label data-en="Stock Symbol" data-th="สัญลักษณ์หุ้น">Stock Symbol</label>
         <input id="f-symbol" type="text" placeholder="e.g. GOOGL, AMZN, NFLX" maxlength="6" style="text-transform:uppercase;font-size:18px;font-weight:600;letter-spacing:0.1em"/>
       </div>
       <div class="form-field" style="grid-column:1/-1">
@@ -670,7 +708,7 @@
         <input id="f-name" type="text" placeholder="Leave blank to auto-detect"/>
       </div>
       <div class="form-field">
-        <label>Sector</label>
+        <label data-en="Sector" data-th="กลุ่มธุรกิจ">Sector</label>
         <select id="f-sector">
           <option value="ai">AI / Semis</option>
           <option value="cloud">Cloud</option>
@@ -684,7 +722,7 @@
     </div>
     <div id="f-lookup-result" style="display:none;margin:12px 0;padding:12px;background:var(--s2);border-radius:8px;border:1px solid var(--border);font-size:12px"></div>
     <div class="modal-actions">
-      <button class="btn-cancel" onclick="closeModal()">Cancel</button>
+      <button class="btn-cancel" onclick="closeModal()" data-en="Cancel" data-th="ยกเลิก">Cancel</button>
       <button class="btn-add-submit" id="btn-lookup" onclick="lookupAndAdd()">
         <span id="btn-lookup-txt">Lookup &amp; Add →</span>
       </button>
@@ -806,9 +844,9 @@
       <div class="prob-wrap">
         <span class="prob-num" style="color:${probColor}">${bullProb ? bullProb + '%' : '—'}</span>
         <div class="prob-bar"><div class="prob-fill" style="width:${bullProb}%;background:${probColor}"></div></div>
-        <span class="prob-lbl">Bull</span>
+        <span class="prob-lbl" data-en="Bull" data-th="กระทิง">Bull</span>
       </div>
-      <a href="thesis.html?symbol=${symbol}" class="view-btn">View Thesis →</a>
+      <a href="thesis.html?symbol=${symbol}" class="view-btn" data-en="View Thesis →" data-th="ดู Thesis →">View Thesis →</a>
       <button class="del-btn" onclick="deleteRow(this)" title="Remove from watchlist">×</button>
     `;
   }
@@ -929,6 +967,44 @@
       renumberRows();
     } catch(e) {}
   })();
+
+  /* ── THEME + LANGUAGE TOGGLE ── */
+  (function() {
+    const savedTheme = localStorage.getItem('s10x-theme') || 'dark';
+    const savedLang  = localStorage.getItem('s10x-lang')  || 'en';
+    if (savedTheme === 'light') document.documentElement.classList.add('light');
+    applyLang(savedLang);
+    setTimeout(() => {
+      const themeBtn = document.getElementById('themeToggle');
+      const langBtn  = document.getElementById('langToggle');
+      if (themeBtn) themeBtn.textContent = savedTheme === 'light' ? '☾' : '☀';
+      if (langBtn)  langBtn.textContent  = savedLang  === 'th'    ? 'EN' : 'TH';
+    }, 0);
+  })();
+
+  function toggleTheme() {
+    const isLight = document.documentElement.classList.toggle('light');
+    localStorage.setItem('s10x-theme', isLight ? 'light' : 'dark');
+    const btn = document.getElementById('themeToggle');
+    if (btn) btn.textContent = isLight ? '☾' : '☀';
+  }
+
+  function toggleLang() {
+    const cur  = localStorage.getItem('s10x-lang') || 'en';
+    const next = cur === 'en' ? 'th' : 'en';
+    localStorage.setItem('s10x-lang', next);
+    applyLang(next);
+    const btn = document.getElementById('langToggle');
+    if (btn) btn.textContent = next === 'th' ? 'EN' : 'TH';
+  }
+
+  function applyLang(lang) {
+    document.querySelectorAll('[data-en]').forEach(el => {
+      const val = lang === 'th' ? (el.dataset.th || el.dataset.en) : el.dataset.en;
+      if (val !== undefined) el.textContent = val;
+    });
+    document.documentElement.lang = lang === 'th' ? 'th' : 'en';
+  }
 </script>
 </body>
 </html>

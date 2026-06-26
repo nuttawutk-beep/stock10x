@@ -356,6 +356,40 @@
       .power-name { flex: 0 0 130px; }
       .power-grade { display: none; }
     }
+
+    /* LIGHT MODE */
+    html.light {
+      --bg: #f4f5f7;
+      --surface: #ffffff;
+      --s2: #eaecef;
+      --fg: #131313;
+      --muted: #5a5a5a;
+      --border: #d4d8de;
+    }
+    html.light nav {
+      background: rgba(244,245,247,0.96) !important;
+    }
+    html.light .modal {
+      background: #ffffff;
+    }
+    html.light .summary-stats {
+      background: #eaecef;
+      border-color: #d4d8de;
+    }
+    html.light .stock-row:hover {
+      background: rgba(0,0,0,0.03);
+    }
+
+    /* TOGGLE BUTTONS */
+    .ctrl-toggle {
+      font-family: var(--font-m); font-size: 9px; font-weight: 600;
+      letter-spacing: 1.2px; background: transparent;
+      border: 1px solid var(--border); border-radius: 20px;
+      padding: 5px 12px; cursor: pointer; color: var(--muted);
+      transition: all 150ms;
+    }
+    .ctrl-toggle:hover { border-color: var(--accent); color: var(--accent); }
+    .ctrl-toggle.active { border-color: var(--accent); color: var(--accent); background: rgba(60,255,208,0.08); }
   </style>
 </head>
 <body>
@@ -368,6 +402,10 @@
     <li><a href="#">Export PDF</a></li>
   </ul>
   <a href="dashboard.html" class="back-link">← Dashboard</a>
+  <div style="display:flex;align-items:center;gap:8px">
+    <button class="ctrl-toggle" id="langToggle" onclick="toggleLang()">TH</button>
+    <button class="ctrl-toggle" id="themeToggle" onclick="toggleTheme()">☀</button>
+  </div>
 </nav>
 
 <!-- STOCK HEADER -->
@@ -381,7 +419,7 @@
   <div class="kpi-strip">
     <div class="kpi">
       <div class="kpi-v">$875.40</div>
-      <div class="kpi-l">Current Price</div>
+      <div class="kpi-l" data-en="Current Price" data-th="ราคาปัจจุบัน">Current Price</div>
     </div>
     <div class="kpi">
       <div class="kpi-v accent">$1,450</div>
@@ -410,17 +448,17 @@
 <div class="scenario-strip">
   <span style="font-family:var(--font-m);font-size:9px;letter-spacing:1.4px;text-transform:uppercase;color:var(--muted);align-self:center;padding-right:4px;flex-shrink:0">Scenarios</span>
   <div class="s-chip bull">
-    <span class="s-label">🐂 Bull</span>
+    <span class="s-label" data-en="🐂 Bull" data-th="🐂 กรณีดีสุด">🐂 Bull</span>
     <span class="s-price">$2,200</span>
     <span class="s-pct">+151% · 35% prob</span>
   </div>
   <div class="s-chip base">
-    <span class="s-label">📊 Base</span>
+    <span class="s-label" data-en="📊 Base" data-th="📊 กรณีปกติ">📊 Base</span>
     <span class="s-price">$1,400</span>
     <span class="s-pct">+60% · 43% prob</span>
   </div>
   <div class="s-chip bear">
-    <span class="s-label">🐻 Bear</span>
+    <span class="s-label" data-en="🐻 Bear" data-th="🐻 กรณีแย่สุด">🐻 Bear</span>
     <span class="s-price">$600</span>
     <span class="s-pct">−31% · 22% prob</span>
   </div>
@@ -428,12 +466,12 @@
 
 <!-- TABS -->
 <div class="tabs-bar">
-  <button class="tab active" onclick="showTab('overview')">Overview</button>
-  <button class="tab" onclick="showTab('fundamentals')">Fundamentals</button>
-  <button class="tab" onclick="showTab('thesis')">7 Powers + SWOT</button>
-  <button class="tab" onclick="showTab('market')">TAM + Key Players</button>
-  <button class="tab" onclick="showTab('financials')">Financials + Valuation</button>
-  <button class="tab" onclick="showTab('scenarios')">Scenarios / Bull–Base–Bear</button>
+  <button class="tab active" onclick="showTab('overview')" data-en="Overview" data-th="ภาพรวม">Overview</button>
+  <button class="tab" onclick="showTab('fundamentals')" data-en="Fundamentals" data-th="ปัจจัยพื้นฐาน">Fundamentals</button>
+  <button class="tab" onclick="showTab('thesis')" data-en="7 Powers + SWOT" data-th="7 จุดแข็ง & SWOT">7 Powers + SWOT</button>
+  <button class="tab" onclick="showTab('market')" data-en="TAM + Key Players" data-th="ตลาด & ผู้เล่น">TAM + Key Players</button>
+  <button class="tab" onclick="showTab('financials')" data-en="Financials + Valuation" data-th="การเงิน + มูลค่า">Financials + Valuation</button>
+  <button class="tab" onclick="showTab('scenarios')" data-en="Scenarios / Bull–Base–Bear" data-th="สถานการณ์ / กระทิง–ปกติ–หมี">Scenarios / Bull–Base–Bear</button>
 </div>
 
 <div class="content">
@@ -935,7 +973,7 @@
     <div class="section-title">Scenario Analysis</div>
     <div class="scenario-cards">
       <div class="sc-card bull">
-        <div class="sc-head">🐂 Bull Case</div>
+        <div class="sc-head" data-en="🐂 Bull Case" data-th="🐂 กรณีดีสุด">🐂 Bull Case</div>
         <div class="sc-price">$2,200</div>
         <div class="sc-return">+151% from current</div>
         <div class="sc-divider"></div>
@@ -952,7 +990,7 @@
         <span class="sc-prob">35% Probability</span>
       </div>
       <div class="sc-card base">
-        <div class="sc-head">📊 Base Case</div>
+        <div class="sc-head" data-en="📊 Base Case" data-th="📊 กรณีปกติ">📊 Base Case</div>
         <div class="sc-price">$1,400</div>
         <div class="sc-return">+60% from current</div>
         <div class="sc-divider"></div>
@@ -969,7 +1007,7 @@
         <span class="sc-prob">43% Probability</span>
       </div>
       <div class="sc-card bear">
-        <div class="sc-head">🐻 Bear Case</div>
+        <div class="sc-head" data-en="🐻 Bear Case" data-th="🐻 กรณีแย่สุด">🐻 Bear Case</div>
         <div class="sc-price">$600</div>
         <div class="sc-return">−31% from current</div>
         <div class="sc-divider"></div>
@@ -1474,6 +1512,44 @@
     }
     generateThesis(symbol);
   })();
+
+  /* ── THEME + LANGUAGE TOGGLE ── */
+  (function() {
+    const savedTheme = localStorage.getItem('s10x-theme') || 'dark';
+    const savedLang  = localStorage.getItem('s10x-lang')  || 'en';
+    if (savedTheme === 'light') document.documentElement.classList.add('light');
+    applyLang(savedLang);
+    setTimeout(() => {
+      const themeBtn = document.getElementById('themeToggle');
+      const langBtn  = document.getElementById('langToggle');
+      if (themeBtn) themeBtn.textContent = savedTheme === 'light' ? '☾' : '☀';
+      if (langBtn)  langBtn.textContent  = savedLang  === 'th'    ? 'EN' : 'TH';
+    }, 0);
+  })();
+
+  function toggleTheme() {
+    const isLight = document.documentElement.classList.toggle('light');
+    localStorage.setItem('s10x-theme', isLight ? 'light' : 'dark');
+    const btn = document.getElementById('themeToggle');
+    if (btn) btn.textContent = isLight ? '☾' : '☀';
+  }
+
+  function toggleLang() {
+    const cur  = localStorage.getItem('s10x-lang') || 'en';
+    const next = cur === 'en' ? 'th' : 'en';
+    localStorage.setItem('s10x-lang', next);
+    applyLang(next);
+    const btn = document.getElementById('langToggle');
+    if (btn) btn.textContent = next === 'th' ? 'EN' : 'TH';
+  }
+
+  function applyLang(lang) {
+    document.querySelectorAll('[data-en]').forEach(el => {
+      const val = lang === 'th' ? (el.dataset.th || el.dataset.en) : el.dataset.en;
+      if (val !== undefined) el.textContent = val;
+    });
+    document.documentElement.lang = lang === 'th' ? 'th' : 'en';
+  }
 </script>
 </body>
 </html>

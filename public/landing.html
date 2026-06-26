@@ -167,6 +167,40 @@
       .metrics .met:nth-child(n+4) { display: none; }
       .met-v { font-size: 24px; }
     }
+
+    /* LIGHT MODE */
+    html.light {
+      --bg: #f4f5f7;
+      --surface: #ffffff;
+      --s2: #eaecef;
+      --fg: #131313;
+      --muted: #5a5a5a;
+      --border: #d4d8de;
+    }
+    html.light nav {
+      background: rgba(244,245,247,0.96) !important;
+    }
+    html.light .modal {
+      background: #ffffff;
+    }
+    html.light .summary-stats {
+      background: #eaecef;
+      border-color: #d4d8de;
+    }
+    html.light .stock-row:hover {
+      background: rgba(0,0,0,0.03);
+    }
+
+    /* TOGGLE BUTTONS */
+    .ctrl-toggle {
+      font-family: var(--font-m); font-size: 9px; font-weight: 600;
+      letter-spacing: 1.2px; background: transparent;
+      border: 1px solid var(--border); border-radius: 20px;
+      padding: 5px 12px; cursor: pointer; color: var(--muted);
+      transition: all 150ms;
+    }
+    .ctrl-toggle:hover { border-color: var(--accent); color: var(--accent); }
+    .ctrl-toggle.active { border-color: var(--accent); color: var(--accent); background: rgba(60,255,208,0.08); }
   </style>
 </head>
 <body>
@@ -178,7 +212,11 @@
     <li><a href="thesis.html">Thesis Builder</a></li>
     <li><a href="dashboard.html">Watchlist</a></li>
   </ul>
-  <a href="dashboard.html" class="btn-nav">Start Free</a>
+  <a href="dashboard.html" class="btn-nav" data-en="Start Free" data-th="เริ่มใช้งาน">Start Free</a>
+  <div style="display:flex;align-items:center;gap:8px">
+    <button class="ctrl-toggle" id="langToggle" onclick="toggleLang()">TH</button>
+    <button class="ctrl-toggle" id="themeToggle" onclick="toggleTheme()">☀</button>
+  </div>
 </nav>
 
 <section class="hero">
@@ -281,34 +319,74 @@
   <div class="hero-fade-bottom"></div>
 
   <div class="hero-content">
-    <p class="eyebrow">Conviction Investing Platform</p>
+    <p class="eyebrow" data-en="Conviction Investing Platform" data-th="แพลตฟอร์มลงทุนอย่างมั่นใจ">Conviction Investing Platform</p>
     <h1>STOCK<span class="a">10X</span></h1>
-    <p class="tagline-en">Find your next 10x opportunity.<br>Build conviction with data-driven thesis research.</p>
+    <p class="tagline-en" data-en="Find your next 10x opportunity. Build conviction with data-driven thesis research." data-th="ค้นหาโอกาส 10x ของคุณ สร้างความมั่นใจด้วยการวิเคราะห์ที่ขับเคลื่อนด้วยข้อมูล">Find your next 10x opportunity.<br>Build conviction with data-driven thesis research.</p>
     <div class="actions">
-      <a href="dashboard.html" class="btn-p">View Dashboard →</a>
-      <a href="thesis.html" class="btn-g">Build Thesis</a>
+      <a href="dashboard.html" class="btn-p" data-en="View Dashboard →" data-th="ดู Dashboard →">View Dashboard →</a>
+      <a href="thesis.html" class="btn-g" data-en="Build Thesis" data-th="สร้าง Thesis">Build Thesis</a>
     </div>
   </div>
 
   <div class="metrics">
     <div class="met">
       <span class="met-v">247</span>
-      <span class="met-en">Stocks Analyzed</span>
+      <span class="met-en" data-en="Stocks Analyzed" data-th="หุ้นที่วิเคราะห์">Stocks Analyzed</span>
     </div>
     <div class="met">
       <span class="met-v">18</span>
-      <span class="met-en">10x Candidates</span>
+      <span class="met-en" data-en="10x Candidates" data-th="หุ้นโอกาส 10x">10x Candidates</span>
     </div>
     <div class="met">
       <span class="met-v">74%</span>
-      <span class="met-en">Avg Bull Probability</span>
+      <span class="met-en" data-en="Avg Bull Probability" data-th="โอกาสขึ้น (เฉลี่ย)">Avg Bull Probability</span>
     </div>
     <div class="met">
       <span class="met-v">$4.2T</span>
-      <span class="met-en">Total TAM Covered</span>
+      <span class="met-en" data-en="Total TAM Covered" data-th="TAM รวมที่ครอบคลุม">Total TAM Covered</span>
     </div>
   </div>
 </section>
+
+<script>
+  /* ── THEME + LANGUAGE TOGGLE ── */
+  (function() {
+    const savedTheme = localStorage.getItem('s10x-theme') || 'dark';
+    const savedLang  = localStorage.getItem('s10x-lang')  || 'en';
+    if (savedTheme === 'light') document.documentElement.classList.add('light');
+    applyLang(savedLang);
+    setTimeout(() => {
+      const themeBtn = document.getElementById('themeToggle');
+      const langBtn  = document.getElementById('langToggle');
+      if (themeBtn) themeBtn.textContent = savedTheme === 'light' ? '☾' : '☀';
+      if (langBtn)  langBtn.textContent  = savedLang  === 'th'    ? 'EN' : 'TH';
+    }, 0);
+  })();
+
+  function toggleTheme() {
+    const isLight = document.documentElement.classList.toggle('light');
+    localStorage.setItem('s10x-theme', isLight ? 'light' : 'dark');
+    const btn = document.getElementById('themeToggle');
+    if (btn) btn.textContent = isLight ? '☾' : '☀';
+  }
+
+  function toggleLang() {
+    const cur  = localStorage.getItem('s10x-lang') || 'en';
+    const next = cur === 'en' ? 'th' : 'en';
+    localStorage.setItem('s10x-lang', next);
+    applyLang(next);
+    const btn = document.getElementById('langToggle');
+    if (btn) btn.textContent = next === 'th' ? 'EN' : 'TH';
+  }
+
+  function applyLang(lang) {
+    document.querySelectorAll('[data-en]').forEach(el => {
+      const val = lang === 'th' ? (el.dataset.th || el.dataset.en) : el.dataset.en;
+      if (val !== undefined) el.textContent = val;
+    });
+    document.documentElement.lang = lang === 'th' ? 'th' : 'en';
+  }
+</script>
 
 </body>
 </html>
