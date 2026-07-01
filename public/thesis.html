@@ -510,30 +510,30 @@
       </div>
     </div>
 
-    <div class="section-title" data-en="Valuation Model Chart" data-th="กราฟโมเดลประเมินราคา 2026–2030">Valuation Model Chart</div>
+    <div class="section-title" data-en="Valuation Model Chart (2025–2030)" data-th="กราฟโมเดลประเมินราคา 2025–2030">Valuation Model Chart (2025–2030)</div>
     <div class="card" id="val-chart-card" style="margin-bottom:24px;padding:20px 16px 16px">
       <div class="vc-legend">
         <div class="vc-model">
-          <span class="vc-model-label">DCF</span>
+          <span class="vc-model-label">PE</span>
           <div class="vc-scen"><span class="vc-scen-line" style="background:#3cffd0"></span><span class="vc-scen-label" style="color:#3cffd0">Bull</span></div>
           <div class="vc-scen"><span class="vc-scen-line" style="background:#22c55e"></span><span class="vc-scen-label" style="color:#22c55e">Base</span></div>
           <div class="vc-scen"><span class="vc-scen-line" style="background:#ef4444;opacity:0.8"></span><span class="vc-scen-label" style="color:#ef4444">Bear</span></div>
         </div>
         <div class="vc-model">
-          <span class="vc-model-label">2030 PE</span>
+          <span class="vc-model-label">PS</span>
           <div class="vc-scen"><span class="vc-scen-line" style="background:#a78bfa"></span><span class="vc-scen-label" style="color:#a78bfa">Bull</span></div>
           <div class="vc-scen"><span class="vc-scen-line" style="background:#7c3aed"></span><span class="vc-scen-label" style="color:#7c3aed">Base</span></div>
           <div class="vc-scen"><span class="vc-scen-line" style="background:#6366f1;opacity:0.8"></span><span class="vc-scen-label" style="color:#6366f1">Bear</span></div>
         </div>
         <div class="vc-model">
-          <span class="vc-model-label">Current PE</span>
+          <span class="vc-model-label">DCF</span>
           <div class="vc-scen"><span class="vc-scen-line" style="background:#fbbf24"></span><span class="vc-scen-label" style="color:#fbbf24">Bull</span></div>
           <div class="vc-scen"><span class="vc-scen-line" style="background:#f59e0b"></span><span class="vc-scen-label" style="color:#f59e0b">Base</span></div>
           <div class="vc-scen"><span class="vc-scen-line" style="background:#d97706;opacity:0.8"></span><span class="vc-scen-label" style="color:#d97706">Bear</span></div>
         </div>
       </div>
-      <div style="overflow-x:auto">
-        <svg id="val-chart-svg" viewBox="0 0 640 260" width="100%" style="display:block;min-width:300px;overflow:visible"></svg>
+      <div style="overflow-x:auto;position:relative">
+        <svg id="val-chart-svg" viewBox="0 0 640 280" width="100%" style="display:block;min-width:300px;overflow:visible"></svg>
       </div>
     </div>
 
@@ -1202,11 +1202,11 @@
 
   /* ── Valuation line chart: 3 models × 3 scenarios, 2026→2030 ── */
   function renderValuationChart(d) {
-    const svg = document.getElementById('val-chart-svg');
-    if (!svg) return;
-    svg.innerHTML = '';
+    const svgEl = document.getElementById('val-chart-svg');
+    if (!svgEl) return;
+    svgEl.innerHTML = '';
 
-    const W = 640, H = 260, mL = 70, mR = 50, mT = 22, mB = 42;
+    const W = 640, H = 280, mL = 70, mR = 100, mT = 22, mB = 42;
     const pW = W - mL - mR, pH = H - mT - mB;
     const NS = 'http://www.w3.org/2000/svg';
 
@@ -1214,19 +1214,24 @@
     const sc  = d.scenarios || { bull: { price: 2200 }, base: { price: 1400 }, bear: { price: 600 } };
     const bul = sc.bull?.price || 2200, bas = sc.base?.price || 1400, ber = sc.bear?.price || 600;
 
+    // PE model: forward P/E applied to earnings projections (highest conviction)
+    // PS model: price/sales multiples (important for growth/pre-revenue cos)
+    // DCF model: discounted cash flow (conservative baseline)
     const models = [
-      { label: 'DCF',        bull: bul,                    base: bas,                    bear: ber,
+      { label: 'PE',  bull: Math.round(bul * 1.05), base: Math.round(bas * 1.00), bear: Math.round(ber * 0.92),
         cBull: '#3cffd0', cBase: '#22c55e', cBear: '#ef4444' },
-      { label: '2030 PE',   bull: Math.round(bul * 0.92), base: Math.round(bas * 0.95), bear: Math.round(ber * 1.1),
+      { label: 'PS',  bull: Math.round(bul * 0.95), base: Math.round(bas * 0.88), bear: Math.round(ber * 1.05),
         cBull: '#a78bfa', cBase: '#7c3aed', cBear: '#6366f1' },
-      { label: 'Current PE', bull: Math.round(bul * 0.82), base: Math.round(bas * 0.85), bear: Math.round(ber * 1.15),
+      { label: 'DCF', bull: Math.round(bul * 0.82), base: Math.round(bas * 0.78), bear: Math.round(ber * 1.12),
         cBull: '#fbbf24', cBase: '#f59e0b', cBear: '#d97706' }
     ];
 
+    const years = [2025, 2026, 2027, 2028, 2029, 2030];
+    const nowIdx = 1; // 2026 = NOW
+
     const allP = [cp, ...models.flatMap(m => [m.bull, m.base, m.bear])];
-    const minY = Math.min(...allP) * 0.88;
+    const minY = Math.min(...allP) * 0.85;
     const maxY = Math.max(...allP) * 1.08;
-    const years = [2026, 2027, 2028, 2029, 2030];
 
     const xPos = i => mL + (i / (years.length - 1)) * pW;
     const yPos = v => mT + pH - ((v - minY) / (maxY - minY)) * pH;
@@ -1238,7 +1243,14 @@
       return e;
     };
 
-    // Horizontal grid lines
+    // Price at a given year index — historical segment is flat at cp, projection compounds to target
+    const priceAt = (target, idx) => {
+      if (idx <= nowIdx) return cp; // all lines start from current price (2025 = same as 2026 NOW)
+      const t = (idx - nowIdx) / (years.length - 1 - nowIdx);
+      return cp * Math.pow(Math.max(target / cp, 0.001), t);
+    };
+
+    // Horizontal grid lines + Y labels
     const range = maxY - minY;
     const raw = range / 5;
     const mag = Math.pow(10, Math.floor(Math.log10(raw)));
@@ -1246,56 +1258,117 @@
     const gStart = Math.ceil(minY / step) * step;
     for (let p = gStart; p <= maxY; p += step) {
       const y = yPos(p);
-      svg.appendChild(mk('line', { x1: mL, y1: y, x2: W - mR, y2: y, stroke: '#2a2a2a', 'stroke-width': 0.8 }));
+      svgEl.appendChild(mk('line', { x1: mL, y1: y, x2: W - mR, y2: y, stroke: '#2a2a2a', 'stroke-width': 0.8 }));
       const lbl = p >= 1000 ? `$${(p / 1000).toFixed(p % 1000 === 0 ? 0 : 1)}k` : `$${Math.round(p)}`;
-      svg.appendChild(mk('text', { x: mL - 6, y: y + 3.5, fill: '#666', 'font-family': 'monospace', 'font-size': 9, 'text-anchor': 'end' }, lbl));
+      svgEl.appendChild(mk('text', { x: mL - 6, y: y + 3.5, fill: '#666', 'font-family': 'monospace', 'font-size': 9, 'text-anchor': 'end' }, lbl));
     }
 
-    // 9 paths (compound growth curves)
-    const compPath = target => years.map((_, i) => {
-      const t = i / (years.length - 1);
-      const price = cp * Math.pow(Math.max(target / cp, 0.001), t);
-      return `${i === 0 ? 'M' : 'L'}${xPos(i).toFixed(1)},${yPos(price).toFixed(1)}`;
-    }).join(' ');
-
+    // Draw 9 paths
     models.forEach(m => {
       [
         { t: m.bull, c: m.cBull, w: 2,   dash: null },
         { t: m.base, c: m.cBase, w: 1.5, dash: null },
         { t: m.bear, c: m.cBear, w: 1.5, dash: '5,3' }
       ].forEach(s => {
-        const attrs = { d: compPath(s.t), stroke: s.c, 'stroke-width': s.w, fill: 'none', 'stroke-linecap': 'round', 'stroke-linejoin': 'round' };
+        const pathD = years.map((_, i) => {
+          const price = priceAt(s.t, i);
+          return `${i === 0 ? 'M' : 'L'}${xPos(i).toFixed(1)},${yPos(price).toFixed(1)}`;
+        }).join(' ');
+        const attrs = { d: pathD, stroke: s.c, 'stroke-width': s.w, fill: 'none', 'stroke-linecap': 'round', 'stroke-linejoin': 'round' };
         if (s.dash) attrs['stroke-dasharray'] = s.dash;
-        svg.appendChild(mk('path', attrs));
-        // End dot + price label
+        svgEl.appendChild(mk('path', attrs));
+        // End dot + price label at 2030
         const ex = xPos(years.length - 1), ey = yPos(s.t);
-        svg.appendChild(mk('circle', { cx: ex, cy: ey, r: 3, fill: s.c }));
-        const priceStr = s.t >= 1000 ? `$${(s.t / 1000).toFixed(1)}k` : `$${s.t}`;
-        svg.appendChild(mk('text', { x: ex + 5, y: ey + 3.5, fill: s.c, 'font-family': 'monospace', 'font-size': 8, 'text-anchor': 'start' }, priceStr));
+        svgEl.appendChild(mk('circle', { cx: ex, cy: ey, r: 3, fill: s.c }));
+        const pStr = s.t >= 1000 ? `$${(s.t / 1000).toFixed(1)}k` : `$${s.t}`;
+        svgEl.appendChild(mk('text', { x: ex + 5, y: ey + 3.5, fill: s.c, 'font-family': 'monospace', 'font-size': 8, 'text-anchor': 'start' }, pStr));
       });
     });
 
-    // NOW vertical marker
-    const x0 = xPos(0);
-    svg.appendChild(mk('line', { x1: x0, y1: mT, x2: x0, y2: H - mB, stroke: '#ffffff', 'stroke-width': 1, 'stroke-dasharray': '3 2', opacity: 0.25 }));
+    // NOW vertical marker at 2026
+    const nowX = xPos(nowIdx);
+    svgEl.appendChild(mk('line', { x1: nowX, y1: mT, x2: nowX, y2: H - mB, stroke: '#ffffff', 'stroke-width': 1, 'stroke-dasharray': '3 2', opacity: 0.3 }));
+    svgEl.appendChild(mk('text', { x: nowX, y: mT - 6, fill: '#888', 'font-family': 'monospace', 'font-size': 8, 'text-anchor': 'middle' }, 'NOW'));
 
-    // Current price dot + label
-    const cy = yPos(cp);
-    svg.appendChild(mk('circle', { cx: x0, cy: cy, r: 5, fill: '#fff', stroke: '#3cffd0', 'stroke-width': 1.5 }));
+    // Current price dot at NOW
+    const cpY = yPos(cp);
+    svgEl.appendChild(mk('circle', { cx: nowX, cy: cpY, r: 5, fill: '#fff', stroke: '#3cffd0', 'stroke-width': 1.5 }));
     const cpStr = cp >= 1000 ? `$${(cp / 1000).toFixed(2)}k` : `$${cp}`;
-    svg.appendChild(mk('text', { x: x0 + 8, y: cy - 6, fill: '#fff', 'font-family': 'monospace', 'font-size': 9 }, `NOW ${cpStr}`));
+    svgEl.appendChild(mk('text', { x: nowX + 8, y: cpY - 6, fill: '#fff', 'font-family': 'monospace', 'font-size': 9 }, cpStr));
 
-    // X axis baseline + year labels
-    svg.appendChild(mk('line', { x1: mL, y1: H - mB, x2: W - mR, y2: H - mB, stroke: '#333', 'stroke-width': 1 }));
+    // Hover crosshair line (hidden by default)
+    const crosshair = mk('line', { x1: nowX, y1: mT, x2: nowX, y2: H - mB, stroke: '#ffffff', 'stroke-width': 0.8, opacity: 0.5, display: 'none' });
+    svgEl.appendChild(crosshair);
+
+    // X axis + year labels
+    svgEl.appendChild(mk('line', { x1: mL, y1: H - mB, x2: W - mR, y2: H - mB, stroke: '#333', 'stroke-width': 1 }));
     years.forEach((yr, i) => {
       const x = xPos(i);
-      svg.appendChild(mk('line', { x1: x, y1: H - mB, x2: x, y2: H - mB + 4, stroke: '#444', 'stroke-width': 1 }));
-      svg.appendChild(mk('text', { x, y: H - mB + 14, fill: '#666', 'font-family': 'monospace', 'font-size': 9, 'text-anchor': 'middle' }, yr.toString()));
+      svgEl.appendChild(mk('line', { x1: x, y1: H - mB, x2: x, y2: H - mB + 4, stroke: '#444', 'stroke-width': 1 }));
+      const isNow = i === nowIdx;
+      svgEl.appendChild(mk('text', { x, y: H - mB + 14, fill: isNow ? '#fff' : '#666', 'font-family': 'monospace', 'font-size': 9, 'text-anchor': 'middle', 'font-weight': isNow ? 700 : 400 }, yr.toString()));
     });
 
     // Y axis label
     const ymid = mT + pH / 2;
-    svg.appendChild(mk('text', { x: 11, y: ymid, fill: '#555', 'font-family': 'monospace', 'font-size': 8, 'text-anchor': 'middle', transform: `rotate(-90,11,${ymid})` }, 'Price (USD)'));
+    svgEl.appendChild(mk('text', { x: 11, y: ymid, fill: '#555', 'font-family': 'monospace', 'font-size': 8, 'text-anchor': 'middle', transform: `rotate(-90,11,${ymid})` }, 'Price (USD)'));
+
+    // Tooltip div (create once, reuse)
+    let tooltip = document.getElementById('val-tooltip');
+    if (!tooltip) {
+      tooltip = document.createElement('div');
+      tooltip.id = 'val-tooltip';
+      tooltip.style.cssText = [
+        'position:absolute', 'background:#1c1c1c', 'border:1px solid #2a2a2a',
+        'border-radius:8px', 'padding:10px 14px', 'font-family:monospace',
+        'font-size:11px', 'color:#fff', 'pointer-events:none', 'display:none',
+        'z-index:100', 'min-width:190px', 'line-height:1.8', 'box-shadow:0 4px 20px rgba(0,0,0,0.5)'
+      ].join(';');
+      const wrap = svgEl.parentElement;
+      wrap.style.position = 'relative';
+      wrap.appendChild(tooltip);
+    }
+
+    svgEl.addEventListener('mousemove', e => {
+      const rect = svgEl.getBoundingClientRect();
+      const mx = (e.clientX - rect.left) * (W / rect.width);
+      if (mx < mL || mx > W - mR) { crosshair.setAttribute('display', 'none'); tooltip.style.display = 'none'; return; }
+
+      const rawIdx = (mx - mL) / pW * (years.length - 1);
+      const idx = Math.max(0, Math.min(years.length - 1, Math.round(rawIdx)));
+      const xExact = xPos(idx);
+
+      crosshair.setAttribute('x1', xExact); crosshair.setAttribute('x2', xExact);
+      crosshair.setAttribute('display', 'block');
+
+      const yr = years[idx];
+      let html = `<div style="color:#888;font-size:9px;letter-spacing:1.2px;margin-bottom:6px">${yr}${idx === nowIdx ? ' · NOW' : ''}</div>`;
+      models.forEach(m => {
+        html += `<div style="color:#666;font-size:8.5px;letter-spacing:0.8px;margin-top:5px;border-top:1px solid #222;padding-top:4px">${m.label}</div>`;
+        [['Bull', m.bull, m.cBull], ['Base', m.base, m.cBase], ['Bear', m.bear, m.cBear]].forEach(([sc, tgt, c]) => {
+          const p = priceAt(tgt, idx);
+          const pStr = p >= 1000 ? `$${(p/1000).toFixed(2)}k` : `$${Math.round(p)}`;
+          html += `<div style="display:flex;justify-content:space-between;gap:12px"><span style="color:${c}">${sc}</span><span style="color:${c}">${pStr}</span></div>`;
+        });
+      });
+
+      tooltip.innerHTML = html;
+      tooltip.style.display = 'block';
+      const pRect = svgEl.parentElement.getBoundingClientRect();
+      const tx = e.clientX - pRect.left + 16;
+      const ty = e.clientY - pRect.top - 80;
+      tooltip.style.left = (tx + 200 > pRect.width ? tx - 216 : tx) + 'px';
+      tooltip.style.top  = Math.max(0, ty) + 'px';
+    });
+
+    svgEl.addEventListener('mouseleave', () => {
+      crosshair.setAttribute('display', 'none');
+      tooltip.style.display = 'none';
+    });
+
+    // Sync legend labels
+    const lbls = document.querySelectorAll('.vc-model-label');
+    ['PE', 'PS', 'DCF'].forEach((t, i) => { if (lbls[i]) lbls[i].textContent = t; });
   }
 
   /* ── Populate thesis sections from API data ── */
